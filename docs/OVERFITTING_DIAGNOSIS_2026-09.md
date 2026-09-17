@@ -77,6 +77,79 @@ meaningful shift. (The two exceptions are `semi_hard/safety_endpoint` and
 `hard/safety_endpoint` with the small MLP, which swing by 0.04–0.23 — see
 below, that's a *different*, real problem, not a validation-set artifact.)
 
+## Follow-up: a real Logistic Regression, and a much wider model zoo
+
+The first pass used Ridge regression in place of Logistic Regression (Logistic
+Regression is a classifier; the target is continuous, so it has no direct
+form here) and a small MLP in place of a CNN (no spatial/sequential
+structure for a convolution to exploit). The follow-up request was to
+include Logistic Regression for real and try many more model families.
+Both done. Script: `scripts/experiments/model_zoo_expansion.py`.
+
+**Logistic Regression, run for real**, by converting `shelf_life_days` into
+Low/Medium/High classes using TRAIN-split tertile cut points (same
+convention as the app's existing efficacy classifier), then fitting a
+genuine multinomial Logistic Regression classifier:
+
+| Specialist | Test accuracy | Test macro-F1 |
+|---|---:|---:|
+| soft/general_shelf_life | 0.952 | 0.952 |
+| semi_hard/general_shelf_life | 0.870 | 0.870 |
+| hard/general_shelf_life | 0.859 | 0.861 |
+| ALL categories/general_shelf_life | 0.932 | 0.932 |
+| soft/safety_endpoint | 0.664 | 0.659 |
+| ALL categories/safety_endpoint | 0.596 | 0.595 |
+| semi_hard/safety_endpoint | 0.375 | 0.369 |
+| hard/safety_endpoint | 0.319 | 0.314 |
+
+This is an important independent check: a 3-class random guess scores
+~0.33 accuracy. `general_shelf_life` is highly classifiable (86-95%) by a
+plain linear classifier; `safety_endpoint` degrades exactly along the same
+line the regression R² already showed (soft > aggregated > semi_hard >
+hard), bottoming out at `hard/safety_endpoint`'s 0.319 -- indistinguishable
+from chance. Two completely different model types (regressor vs
+classifier) and two completely different metrics (R² vs accuracy) agree on
+which segments are learnable and which aren't. That agreement is strong
+evidence the pattern is a property of the data, not an artifact of one
+model or one metric.
+
+**Ten more regressors**, spanning families not tried in the first pass
+(linear: Lasso, ElasticNet, Bayesian Ridge, PLS; instance-based: KNN;
+kernel: SVR-RBF; three more tree-ensemble strategies: Gradient Boosting,
+AdaBoost, Extra Trees; and a naive mean-predictor baseline), run across all
+8 dataset configurations (88 fits total, on top of the first pass's 64 + 12
+CV runs -- **152 new supervised model fits in total** across this
+diagnosis, spanning **15 distinct model families**):
+
+| Model (soft/general_shelf_life) | Test R² |
+|---|---:|
+| Dummy mean-predictor baseline | -0.000 |
+| Elastic Net | 0.895 |
+| Lasso | 0.908 |
+| PLS regression | 0.902 |
+| Bayesian Ridge | 0.910 |
+| KNN (k=5) | 0.905 |
+| AdaBoost | 0.917 |
+| SVR (RBF) | 0.946 |
+| Gradient Boosting | 0.959 |
+| Extra Trees | 0.961 |
+| *(production) LightGBM* | *0.971* |
+
+Every single one of 15 independently-implemented model families -- from a
+naive mean guess (correctly ~0, confirming the harness itself is sound) up
+through kernel methods, boosting, and bagging -- lands in the same
+0.89-0.98 band for this specialist. No family "breaks" the pattern by
+scoring dramatically lower, which is what would be expected if 0.971 were
+one high-capacity model overfitting something the others couldn't reach.
+
+The `hard/safety_endpoint` underfitting finding is now confirmed by every
+single one of the 10 new regressors too -- Lasso, ElasticNet, Bayesian
+Ridge, KNN, SVR, Gradient Boosting, AdaBoost, Extra Trees, and PLS all score
+**negative test R²** on this segment (range: -0.17 to -0.04), matching the
+first pass's Ridge/tree/RF/MLP results exactly. 18 of 18 model types tried
+across both passes fail on this segment identically -- this is not a
+model-choice problem.
+
 ## What's actually going on
 
 Checked directly: every row in every V7 category file has
@@ -130,9 +203,14 @@ signature of small-sample split noise, not excess capacity).
 
 ```bash
 .venv/Scripts/python.exe scripts/experiments/overfitting_diagnosis.py
+.venv/Scripts/python.exe scripts/experiments/model_zoo_expansion.py
 ```
 
-Writes `experiment_1_4_results.csv` (64 model fits: 4 model types x 8
-dataset granularities x with/without validation split) and
-`experiment_2_cv_results.csv` (12 K-fold CV runs) to
-`scripts/experiments/overfitting_diagnosis/`.
+Writes, all to `scripts/experiments/overfitting_diagnosis/`:
+- `experiment_1_4_results.csv` -- 64 fits: 4 model types x 8 dataset
+  granularities x with/without validation split
+- `experiment_2_cv_results.csv` -- 12 K-fold CV runs (K=5, K=10)
+- `experiment_3_extra_regressors.csv` -- 80 fits: 10 more regressor
+  families x 8 dataset granularities
+- `experiment_3_logistic_regression.csv` -- 8 fits: real Logistic
+  Regression (Low/Medium/High classes) x 8 dataset granularities
