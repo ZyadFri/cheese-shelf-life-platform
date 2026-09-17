@@ -1,0 +1,90 @@
+==============================================================================
+EXPERIMENT 1 + 4: reduced-complexity models x granularity x validation-split
+==============================================================================
+[specialist] soft/general_shelf_life ridge_regression val_used=True: train_r2=0.927 test_r2=0.910 gap=0.017
+[specialist] soft/general_shelf_life ridge_regression val_used=False: train_r2=0.927 test_r2=0.911 gap=0.016
+[specialist] soft/general_shelf_life shallow_decision_tree val_used=True: train_r2=0.921 test_r2=0.926 gap=-0.005
+[specialist] soft/general_shelf_life shallow_decision_tree val_used=False: train_r2=0.919 test_r2=0.924 gap=-0.005
+[specialist] soft/general_shelf_life shallow_random_forest val_used=True: train_r2=0.953 test_r2=0.934 gap=0.019
+[specialist] soft/general_shelf_life shallow_random_forest val_used=False: train_r2=0.952 test_r2=0.941 gap=0.011
+[specialist] soft/general_shelf_life small_mlp val_used=True: train_r2=0.984 test_r2=0.972 gap=0.012
+[specialist] soft/general_shelf_life small_mlp val_used=False: train_r2=0.983 test_r2=0.972 gap=0.011
+[specialist] soft/safety_endpoint ridge_regression val_used=True: train_r2=0.603 test_r2=0.572 gap=0.032
+[specialist] soft/safety_endpoint ridge_regression val_used=False: train_r2=0.606 test_r2=0.565 gap=0.041
+[specialist] soft/safety_endpoint shallow_decision_tree val_used=True: train_r2=0.625 test_r2=0.541 gap=0.084
+[specialist] soft/safety_endpoint shallow_decision_tree val_used=False: train_r2=0.627 test_r2=0.552 gap=0.075
+[specialist] soft/safety_endpoint shallow_random_forest val_used=True: train_r2=0.674 test_r2=0.587 gap=0.086
+[specialist] soft/safety_endpoint shallow_random_forest val_used=False: train_r2=0.674 test_r2=0.594 gap=0.080
+[specialist] soft/safety_endpoint small_mlp val_used=True: train_r2=0.774 test_r2=0.483 gap=0.291
+[specialist] soft/safety_endpoint small_mlp val_used=False: train_r2=0.757 test_r2=0.454 gap=0.303
+[specialist] semi_hard/general_shelf_life ridge_regression val_used=True: train_r2=0.902 test_r2=0.866 gap=0.035
+[specialist] semi_hard/general_shelf_life ridge_regression val_used=False: train_r2=0.900 test_r2=0.868 gap=0.032
+[specialist] semi_hard/general_shelf_life shallow_decision_tree val_used=True: train_r2=0.902 test_r2=0.816 gap=0.086
+[specialist] semi_hard/general_shelf_life shallow_decision_tree val_used=False: train_r2=0.900 test_r2=0.822 gap=0.079
+[specialist] semi_hard/general_shelf_life shallow_random_forest val_used=True: train_r2=0.931 test_r2=0.864 gap=0.067
+[specialist] semi_hard/general_shelf_life shallow_random_forest val_used=False: train_r2=0.927 test_r2=0.864 gap=0.063
+[specialist] semi_hard/general_shelf_life small_mlp val_used=True: train_r2=0.961 test_r2=0.933 gap=0.028
+[specialist] semi_hard/general_shelf_life small_mlp val_used=False: train_r2=0.958 test_r2=0.934 gap=0.023
+[specialist] semi_hard/safety_endpoint ridge_regression val_used=True: train_r2=0.276 test_r2=0.345 gap=-0.068
+[specialist] semi_hard/safety_endpoint ridge_regression val_used=False: train_r2=0.252 test_r2=0.367 gap=-0.115
+[specialist] semi_hard/safety_endpoint shallow_decision_tree val_used=True: train_r2=0.297 test_r2=0.402 gap=-0.105
+[specialist] semi_hard/safety_endpoint shallow_decision_tree val_used=False: train_r2=0.263 test_r2=0.308 gap=-0.045
+[specialist] semi_hard/safety_endpoint shallow_random_forest val_used=True: train_r2=0.368 test_r2=0.373 gap=-0.005
+[specialist] semi_hard/safety_endpoint shallow_random_forest val_used=False: train_r2=0.319 test_r2=0.362 gap=-0.043
+[specialist] semi_hard/safety_endpoint small_mlp val_used=True: train_r2=0.325 test_r2=0.301 gap=0.023
+[specialist] semi_hard/safety_endpoint small_mlp val_used=False: train_r2=0.493 test_r2=0.263 gap=0.230
+[specialist] hard/general_shelf_life ridge_regression val_used=True: train_r2=0.916 test_r2=0.929 gap=-0.013
+[specialist] hard/general_shelf_life ridge_regression val_used=False: train_r2=0.914 test_r2=0.930 gap=-0.016
+[specialist] hard/general_shelf_life shallow_decision_tree val_used=True: train_r2=0.888 test_r2=0.861 gap=0.027
+[specialist] hard/general_shelf_life shallow_decision_tree val_used=False: train_r2=0.882 test_r2=0.875 gap=0.007
+[specialist] hard/general_shelf_life shallow_random_forest val_used=True: train_r2=0.921 test_r2=0.900 gap=0.021
+[specialist] hard/general_shelf_life shallow_random_forest val_used=False: train_r2=0.917 test_r2=0.903 gap=0.013
+[specialist] hard/general_shelf_life small_mlp val_used=True: train_r2=0.951 test_r2=0.939 gap=0.012
+[specialist] hard/general_shelf_life small_mlp val_used=False: train_r2=0.948 test_r2=0.939 gap=0.009
+[specialist] hard/safety_endpoint ridge_regression val_used=True: train_r2=0.040 test_r2=-0.055 gap=0.095
+[specialist] hard/safety_endpoint ridge_regression val_used=False: train_r2=0.033 test_r2=-0.048 gap=0.081
+[specialist] hard/safety_endpoint shallow_decision_tree val_used=True: train_r2=0.133 test_r2=-0.224 gap=0.357
+[specialist] hard/safety_endpoint shallow_decision_tree val_used=False: train_r2=0.108 test_r2=-0.212 gap=0.320
+[specialist] hard/safety_endpoint shallow_random_forest val_used=True: train_r2=0.298 test_r2=-0.079 gap=0.377
+[specialist] hard/safety_endpoint shallow_random_forest val_used=False: train_r2=0.272 test_r2=-0.068 gap=0.340
+[specialist] hard/safety_endpoint small_mlp val_used=True: train_r2=0.031 test_r2=-0.057 gap=0.087
+[specialist] hard/safety_endpoint small_mlp val_used=False: train_r2=0.027 test_r2=-0.037 gap=0.064
+[aggregated] ALL/general_shelf_life ridge_regression val_used=True: train_r2=0.929 test_r2=0.911 gap=0.019
+[aggregated] ALL/general_shelf_life ridge_regression val_used=False: train_r2=0.928 test_r2=0.910 gap=0.018
+[aggregated] ALL/general_shelf_life shallow_decision_tree val_used=True: train_r2=0.834 test_r2=0.842 gap=-0.008
+[aggregated] ALL/general_shelf_life shallow_decision_tree val_used=False: train_r2=0.831 test_r2=0.843 gap=-0.013
+[aggregated] ALL/general_shelf_life shallow_random_forest val_used=True: train_r2=0.879 test_r2=0.883 gap=-0.004
+[aggregated] ALL/general_shelf_life shallow_random_forest val_used=False: train_r2=0.879 test_r2=0.885 gap=-0.006
+[aggregated] ALL/general_shelf_life small_mlp val_used=True: train_r2=0.971 test_r2=0.959 gap=0.012
+[aggregated] ALL/general_shelf_life small_mlp val_used=False: train_r2=0.971 test_r2=0.961 gap=0.010
+[aggregated] ALL/safety_endpoint ridge_regression val_used=True: train_r2=0.680 test_r2=0.631 gap=0.049
+[aggregated] ALL/safety_endpoint ridge_regression val_used=False: train_r2=0.674 test_r2=0.635 gap=0.039
+[aggregated] ALL/safety_endpoint shallow_decision_tree val_used=True: train_r2=0.684 test_r2=0.637 gap=0.047
+[aggregated] ALL/safety_endpoint shallow_decision_tree val_used=False: train_r2=0.679 test_r2=0.631 gap=0.048
+[aggregated] ALL/safety_endpoint shallow_random_forest val_used=True: train_r2=0.709 test_r2=0.638 gap=0.070
+[aggregated] ALL/safety_endpoint shallow_random_forest val_used=False: train_r2=0.699 test_r2=0.642 gap=0.057
+[aggregated] ALL/safety_endpoint small_mlp val_used=True: train_r2=0.683 test_r2=0.631 gap=0.052
+[aggregated] ALL/safety_endpoint small_mlp val_used=False: train_r2=0.718 test_r2=0.607 gap=0.111
+
+  -> 64 model fits written to C:\Users\lenovo\Desktop\Mcgill-Canada\cheese-shelf-life-modeling\scripts\experiments\overfitting_diagnosis\experiment_1_4_results.csv
+
+==============================================================================
+EXPERIMENT 2: K-fold cross-validation (K=5, K=10), GroupKFold on context_id
+==============================================================================
+[CV] ALL/general_shelf_life k=5 ridge_regression: r2_mean=0.923 +/- 0.005
+[CV] ALL/general_shelf_life k=5 lightgbm_production_hparams: r2_mean=0.964 +/- 0.003
+[CV] ALL/general_shelf_life k=10 ridge_regression: r2_mean=0.923 +/- 0.008
+[CV] ALL/general_shelf_life k=10 lightgbm_production_hparams: r2_mean=0.965 +/- 0.004
+[CV] ALL/safety_endpoint k=5 ridge_regression: r2_mean=0.653 +/- 0.015
+[CV] ALL/safety_endpoint k=5 lightgbm_production_hparams: r2_mean=0.638 +/- 0.019
+[CV] ALL/safety_endpoint k=10 ridge_regression: r2_mean=0.653 +/- 0.028
+[CV] ALL/safety_endpoint k=10 lightgbm_production_hparams: r2_mean=0.637 +/- 0.033
+[CV] soft/general_shelf_life k=5 ridge_regression: r2_mean=0.921 +/- 0.003
+[CV] soft/general_shelf_life k=5 lightgbm_production_hparams: r2_mean=0.972 +/- 0.002
+[CV] soft/general_shelf_life k=10 ridge_regression: r2_mean=0.921 +/- 0.005
+[CV] soft/general_shelf_life k=10 lightgbm_production_hparams: r2_mean=0.974 +/- 0.005
+
+  -> 12 CV runs written to C:\Users\lenovo\Desktop\Mcgill-Canada\cheese-shelf-life-modeling\scripts\experiments\overfitting_diagnosis\experiment_2_cv_results.csv
+
+Total duration: 407.4s
+Total NEW models trained (experiment 1+4 fits, excluding CV folds): 64
