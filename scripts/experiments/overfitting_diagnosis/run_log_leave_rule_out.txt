@@ -1,0 +1,152 @@
+
+==============================================================================
+soft/general_shelf_life  (n=8800, n_rules=7)
+==============================================================================
+  ridge_regression: mean_r2=-5.752  median=-5.736  std=7.808  range=[-22.739, 0.902]
+      held out V7|PH_CHEESE                                            n=5654  r2=  0.899  mae=  5.37
+      held out V7|PLANT_REVIEW                                         n=2541  r2=  0.902  mae=  5.40
+      held out V7|RICOTTA_MAP                                          n= 283  r2= -6.527  mae=  4.27
+      held out V7|NATAMYCIN_REVIEW                                     n= 152  r2=  0.895  mae=  5.73
+      held out V7|RICOTTA_MAP|PLANT_REVIEW                             n= 145  r2= -5.736  mae=  4.84
+      held out V7|HMMC_NAT|NATAMYCIN_REVIEW                            n=  17  r2= -7.959  mae=  4.35
+      held out V7|RICOTTA_MAP|NATAMYCIN_REVIEW                         n=   8  r2=-22.739  mae=  4.82
+  lightgbm_production_hparams: mean_r2=0.752  median=0.831  std=0.256  range=[0.254, 0.984]
+      held out V7|PH_CHEESE                                            n=5654  r2=  0.940  mae=  3.70
+      held out V7|PLANT_REVIEW                                         n=2541  r2=  0.983  mae=  2.18
+      held out V7|RICOTTA_MAP                                          n= 283  r2=  0.831  mae=  0.64
+      held out V7|NATAMYCIN_REVIEW                                     n= 152  r2=  0.984  mae=  2.35
+      held out V7|RICOTTA_MAP|PLANT_REVIEW                             n= 145  r2=  0.767  mae=  0.74
+      held out V7|HMMC_NAT|NATAMYCIN_REVIEW                            n=  17  r2=  0.502  mae=  1.10
+      held out V7|RICOTTA_MAP|NATAMYCIN_REVIEW                         n=   8  r2=  0.254  mae=  0.79
+
+==============================================================================
+soft/safety_endpoint  (n=4800, n_rules=11)
+==============================================================================
+  ridge_regression: mean_r2=0.255  median=0.276  std=0.283  range=[-0.304, 0.708]
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM                        n=1579  r2=  0.692  mae=  7.42
+      held out V7|RISK_REVIEW|PH_CHEESE                                n=1120  r2=  0.325  mae=  9.66
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE                   n= 539  r2=  0.276  mae=  9.91
+      held out V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW                   n= 484  r2=  0.329  mae=  9.70
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW           n= 357  r2=  0.708  mae=  6.89
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW      n= 313  r2=  0.255  mae=  9.85
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|RICOTTA_NISIN          n= 116  r2=  0.303  mae=  3.70
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|FETA_OREGANO           n= 112  r2= -0.006  mae= 12.16
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|QF_MARKET              n=  96  r2=  0.271  mae=  3.29
+      held out V7|FETA_OREGANO|RISK_REVIEW|PH_CHEESE                   n=  58  r2= -0.304  mae= 10.51
+      held out V7|FETA_OREGANO|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW      n=  26  r2= -0.048  mae= 10.97
+  lightgbm_production_hparams: mean_r2=0.600  median=0.705  std=0.327  range=[-0.187, 0.951]
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM                        n=1579  r2=  0.799  mae=  5.31
+      held out V7|RISK_REVIEW|PH_CHEESE                                n=1120  r2=  0.686  mae=  6.13
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE                   n= 539  r2=  0.705  mae=  5.98
+      held out V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW                   n= 484  r2=  0.863  mae=  4.08
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW           n= 357  r2=  0.951  mae=  2.61
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW      n= 313  r2=  0.802  mae=  4.77
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|RICOTTA_NISIN          n= 116  r2=  0.500  mae=  2.66
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|FETA_OREGANO           n= 112  r2= -0.187  mae= 13.24
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|QF_MARKET              n=  96  r2=  0.432  mae=  2.84
+      held out V7|FETA_OREGANO|RISK_REVIEW|PH_CHEESE                   n=  58  r2=  0.195  mae=  7.26
+      held out V7|FETA_OREGANO|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW      n=  26  r2=  0.849  mae=  4.07
+
+==============================================================================
+semi_hard/general_shelf_life  (n=7200, n_rules=12)
+==============================================================================
+  ridge_regression: mean_r2=0.055  median=0.417  std=0.942  range=[-2.197, 0.892]
+      held out V7|HARD_SEMI_REVIEW                                     n=3013  r2=  0.792  mae=  8.70
+      held out V7|HARD_SEMI_REVIEW|PLANT_REVIEW                        n=2038  r2=  0.816  mae=  8.63
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW         n= 620  r2=  0.339  mae= 35.77
+      held out V7|HARD_SEMI_REVIEW|SALOIO_COATING                      n= 346  r2= -1.463  mae=  8.36
+      held out V7|HARD_SEMI_REVIEW|LMM_MAP                             n= 333  r2=  0.496  mae=  9.89
+      held out V7|HARD_SEMI_REVIEW|SALOIO_COATING|PLANT_REVIEW         n= 292  r2= -2.197  mae= 11.71
+      held out V7|HARD_SEMI_REVIEW|LMM_MAP|PLANT_REVIEW                n= 227  r2=  0.707  mae=  7.81
+      held out V7|HARD_SEMI_REVIEW|NATAMYCIN_REVIEW                    n= 157  r2=  0.892  mae=  7.12
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|SALOIO_COATING n=  76  r2=  0.053  mae= 40.45
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|LMM_MAP n=  64  r2= -0.103  mae= 48.57
+      held out V7|HARD_SEMI_REVIEW|SALOIO_COATING|NATAMYCIN_REVIEW     n=  22  r2= -0.428  mae=  8.18
+      held out V7|HARD_SEMI_REVIEW|LMM_MAP|NATAMYCIN_REVIEW            n=  12  r2=  0.756  mae=  4.66
+  lightgbm_production_hparams: mean_r2=0.782  median=0.871  std=0.183  range=[0.279, 0.939]
+      held out V7|HARD_SEMI_REVIEW                                     n=3013  r2=  0.916  mae=  5.42
+      held out V7|HARD_SEMI_REVIEW|PLANT_REVIEW                        n=2038  r2=  0.924  mae=  5.44
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW         n= 620  r2=  0.674  mae= 24.98
+      held out V7|HARD_SEMI_REVIEW|SALOIO_COATING                      n= 346  r2=  0.279  mae=  4.55
+      held out V7|HARD_SEMI_REVIEW|LMM_MAP                             n= 333  r2=  0.865  mae=  4.88
+      held out V7|HARD_SEMI_REVIEW|SALOIO_COATING|PLANT_REVIEW         n= 292  r2=  0.772  mae=  2.84
+      held out V7|HARD_SEMI_REVIEW|LMM_MAP|PLANT_REVIEW                n= 227  r2=  0.891  mae=  4.56
+      held out V7|HARD_SEMI_REVIEW|NATAMYCIN_REVIEW                    n= 157  r2=  0.939  mae=  5.24
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|SALOIO_COATING n=  76  r2=  0.656  mae= 21.21
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|LMM_MAP n=  64  r2=  0.675  mae= 24.94
+      held out V7|HARD_SEMI_REVIEW|SALOIO_COATING|NATAMYCIN_REVIEW     n=  22  r2=  0.877  mae=  2.24
+      held out V7|HARD_SEMI_REVIEW|LMM_MAP|NATAMYCIN_REVIEW            n=  12  r2=  0.916  mae=  2.80
+
+==============================================================================
+semi_hard/safety_endpoint  (n=4000, n_rules=8)
+==============================================================================
+  ridge_regression: mean_r2=0.133  median=0.106  std=0.194  range=[-0.105, 0.391]
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM                        n=1297  r2=  0.382  mae= 13.88
+      held out V7|RISK_REVIEW|PH_CHEESE                                n=1046  r2= -0.048  mae= 15.17
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE                   n= 498  r2=  0.269  mae= 15.78
+      held out V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW                   n= 482  r2= -0.020  mae= 14.35
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW           n= 331  r2=  0.391  mae= 13.64
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW      n= 270  r2=  0.233  mae= 15.73
+      held out V7|KASHAR_EO|RISK_REVIEW|PH_CHEESE                      n=  54  r2= -0.041  mae= 14.90
+      held out V7|KASHAR_EO|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW         n=  22  r2= -0.105  mae= 14.81
+  lightgbm_production_hparams: mean_r2=0.737  median=0.787  std=0.157  range=[0.486, 0.924]
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM                        n=1297  r2=  0.648  mae=  9.83
+      held out V7|RISK_REVIEW|PH_CHEESE                                n=1046  r2=  0.528  mae=  9.24
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE                   n= 498  r2=  0.724  mae=  8.81
+      held out V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW                   n= 482  r2=  0.851  mae=  5.14
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW           n= 331  r2=  0.924  mae=  4.68
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW      n= 270  r2=  0.871  mae=  5.87
+      held out V7|KASHAR_EO|RISK_REVIEW|PH_CHEESE                      n=  54  r2=  0.486  mae= 10.29
+      held out V7|KASHAR_EO|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW         n=  22  r2=  0.865  mae=  5.42
+
+==============================================================================
+hard/general_shelf_life  (n=6000, n_rules=8)
+==============================================================================
+  ridge_regression: mean_r2=0.108  median=0.166  std=0.701  range=[-1.345, 0.837]
+      held out V7|HARD_SEMI_REVIEW                                     n=2741  r2=  0.811  mae=  7.89
+      held out V7|HARD_SEMI_REVIEW|PLANT_REVIEW                        n=2197  r2=  0.720  mae= 10.77
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW         n= 620  r2= -0.282  mae= 33.43
+      held out V7|HARD_SEMI_REVIEW|NATAMYCIN_REVIEW                    n= 170  r2=  0.837  mae=  7.90
+      held out V7|HARD_SEMI_REVIEW|SHRED_NAT                           n= 135  r2= -0.210  mae=  7.63
+      held out V7|HARD_SEMI_REVIEW|SHRED_NAT|PLANT_REVIEW              n=  97  r2= -1.345  mae=  9.68
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|SHRED_NAT n=  32  r2= -0.113  mae= 30.94
+      held out V7|HARD_SEMI_REVIEW|SHRED_NAT|NATAMYCIN_REVIEW          n=   8  r2=  0.444  mae=  4.79
+  lightgbm_production_hparams: mean_r2=0.182  median=0.703  std=1.079  range=[-2.537, 0.925]
+      held out V7|HARD_SEMI_REVIEW                                     n=2741  r2=  0.753  mae=  9.66
+      held out V7|HARD_SEMI_REVIEW|PLANT_REVIEW                        n=2197  r2=  0.836  mae=  8.02
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW         n= 620  r2= -2.537  mae= 55.16
+      held out V7|HARD_SEMI_REVIEW|NATAMYCIN_REVIEW                    n= 170  r2=  0.925  mae=  5.15
+      held out V7|HARD_SEMI_REVIEW|SHRED_NAT                           n= 135  r2= -0.093  mae=  7.32
+      held out V7|HARD_SEMI_REVIEW|SHRED_NAT|PLANT_REVIEW              n=  97  r2=  0.164  mae=  5.54
+      held out V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|SHRED_NAT n=  32  r2=  0.681  mae= 15.64
+      held out V7|HARD_SEMI_REVIEW|SHRED_NAT|NATAMYCIN_REVIEW          n=   8  r2=  0.725  mae=  3.35
+
+==============================================================================
+hard/safety_endpoint  (n=3200, n_rules=10)
+==============================================================================
+  ridge_regression: mean_r2=-0.039  median=-0.019  std=0.058  range=[-0.161, 0.055]
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM                        n= 957  r2= -0.067  mae= 18.67
+      held out V7|RISK_REVIEW|PH_CHEESE                                n= 890  r2= -0.088  mae= 17.81
+      held out V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW                   n= 406  r2= -0.016  mae= 17.34
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE                   n= 300  r2=  0.005  mae= 19.26
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW           n= 227  r2= -0.008  mae= 19.03
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW      n= 160  r2= -0.022  mae= 19.51
+      held out V7|CHEDDAR_SALMONELLA|RISK_REVIEW|PH_CHEESE             n= 102  r2= -0.161  mae= 19.72
+      held out V7|CHEDDAR_ECOLI|RISK_REVIEW|PH_CHEESE                  n=  80  r2= -0.004  mae= 17.69
+      held out V7|CHEDDAR_SALMONELLA|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW n=  46  r2= -0.083  mae= 17.55
+      held out V7|CHEDDAR_ECOLI|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW     n=  32  r2=  0.055  mae= 15.13
+  lightgbm_production_hparams: mean_r2=0.707  median=0.781  std=0.207  range=[0.375, 0.927]
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM                        n= 957  r2=  0.375  mae= 12.79
+      held out V7|RISK_REVIEW|PH_CHEESE                                n= 890  r2=  0.594  mae=  9.80
+      held out V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW                   n= 406  r2=  0.913  mae=  4.69
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE                   n= 300  r2=  0.703  mae=  9.82
+      held out V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW           n= 227  r2=  0.900  mae=  5.39
+      held out V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW      n= 160  r2=  0.860  mae=  6.29
+      held out V7|CHEDDAR_SALMONELLA|RISK_REVIEW|PH_CHEESE             n= 102  r2=  0.488  mae= 11.71
+      held out V7|CHEDDAR_ECOLI|RISK_REVIEW|PH_CHEESE                  n=  80  r2=  0.429  mae= 11.71
+      held out V7|CHEDDAR_SALMONELLA|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW n=  46  r2=  0.880  mae=  5.37
+      held out V7|CHEDDAR_ECOLI|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW     n=  32  r2=  0.927  mae=  3.92
+
+==============================================================================
+Total duration: 163.2s
+Written: experiment_4_leave_rule_out_summary.csv, experiment_4_leave_rule_out_detail.csv
