@@ -279,12 +279,57 @@ signature of small-sample split noise, not excess capacity).
   combinations, ricotta, rare pathogen/matrix pairs) are concrete targets
   for more real data collection — a data gap, not a modeling gap.
 
+## Update: full 17-model leave-rule-out ranking
+
+The leave-rule-out test above was initially run for only 2 of the 17 model
+families (Ridge, LightGBM). It was extended to all 17 (`leave_rule_out_full_zoo.py`
+for the 15-model zoo, `leave_rule_out_rf_xgb.py` for Random Forest and
+XGBoost) so the full picture, not just two data points, is on record.
+Ranked by average median leave-rule-out R² across all 6 specialists:
+
+| Rank | Model | Avg. median R² | Avg. mean R² |
+|---|---|---:|---:|
+| 1 | Random Forest (production hparams) | 0.791 | 0.582 |
+| 2 | LightGBM (production hparams) | 0.780 | 0.627 |
+| 3 | XGBoost (production hparams) | 0.719 | 0.550 |
+| 4 | Extra Trees | 0.492 | 0.209 |
+| 5 | Gradient Boosting | 0.450 | 0.280 |
+| 6 | Small MLP | 0.342 | 0.219 |
+| 7 | Shallow Random Forest | 0.278 | −0.230 |
+| 8 | Shallow Decision Tree | 0.192 | −1.733 |
+| 9 | SVR (RBF) | −0.153 | −0.454 |
+| 10 | AdaBoost | −0.178 | −1.248 |
+| 11 | Elastic Net | −0.675 | −0.772 |
+| 12 | Lasso | −0.736 | −0.690 |
+| 13 | Bayesian Ridge | −0.795 | −0.872 |
+| 14 | Ridge Regression | −0.798 | −0.874 |
+| 15 | PLS Regression | −0.952 | −1.106 |
+| 16 | KNN (k=5) | −1.537 | −3.412 |
+| 17 | Dummy mean baseline | −12.833 | −15.637 |
+
+The three production tree ensembles cluster at 0.72–0.79 and are the only
+family whose median stays positive above 0.55 on every one of the 6
+specialists. Every other family drops below 0.50, and 8 of the other 14
+average negative — a wide, honest spread, not the uniform 0.9+ the
+context-holdout view showed. Full per-specialist breakdown, per-class
+narrative, and the mean-vs-median explanation (driven by a handful of
+sub-20-row held-out rules that swing every model, including the
+ensembles, on that one fold) are in
+`ShelfLife_Overfitting_Report/main.tex` / `main.pdf`.
+
+EBM was not re-run under leave-rule-out (its `FrameImputer` preprocessing
+pipeline differs from the shared scaled pipeline every other model here
+uses); its context-holdout test R² (0.944 / 0.360 / 0.909 / −0.127 / 0.917
+/ −0.528 across the 6 specialists) is reported for reference only.
+
 ## Reproducing this
 
 ```bash
 .venv/Scripts/python.exe scripts/experiments/overfitting_diagnosis.py
 .venv/Scripts/python.exe scripts/experiments/model_zoo_expansion.py
 .venv/Scripts/python.exe scripts/experiments/leave_rule_out_cv.py
+.venv/Scripts/python.exe scripts/experiments/leave_rule_out_full_zoo.py
+.venv/Scripts/python.exe scripts/experiments/leave_rule_out_rf_xgb.py
 ```
 
 Writes, all to `scripts/experiments/overfitting_diagnosis/`:
@@ -298,3 +343,12 @@ Writes, all to `scripts/experiments/overfitting_diagnosis/`:
 - `experiment_4_leave_rule_out_summary.csv` / `_detail.csv` -- leave-one-
   rule-out GroupKFold (Ridge + production-hyperparameter LightGBM) across
   all 6 specialists, per-rule and aggregated
+- `experiment_5_leave_rule_out_full_zoo.csv` -- leave-one-rule-out for all
+  15 zoo models across all 6 specialists (90 rows)
+- `experiment_6_leave_rule_out_rf_xgb.csv` -- leave-one-rule-out for
+  Random Forest + XGBoost across all 6 specialists (12 rows)
+
+The full, detailed writeup of the 17-model leave-rule-out ranking --
+per-complexity-class breakdowns, per-specialist charts, and the mean-vs-
+median explanation -- is in `ShelfLife_Overfitting_Report/main.tex` /
+`main.pdf`, not duplicated in full here.
