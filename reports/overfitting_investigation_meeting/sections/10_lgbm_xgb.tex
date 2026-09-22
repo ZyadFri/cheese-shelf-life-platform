@@ -1,0 +1,172 @@
+\chapter{LightGBM and XGBoost}
+\label{ch:lgbm-xgb}
+
+\begin{saybox}[title=What to say at the start of this section]
+Explain boosting as correction rather than averaging: each tree is fitted
+to what the previous trees got wrong. Then make the key comparison
+explicit --- under the original protocol the three ensembles were
+indistinguishable; under leave-rule-out they separate, and they fail on
+the same rules.
+\end{saybox}
+
+\section{Gradient boosting}
+
+Both models fit an additive ensemble stage by stage,
+\begin{equation}
+F_M(\mathbf{x}) = F_0(\mathbf{x}) + \eta \sum_{m=1}^{M} h_m(\mathbf{x}),
+\end{equation}
+where each $h_m$ is a regression tree fitted to the negative gradient of
+the loss at the current prediction. For squared error the gradient is the
+residual itself,
+\begin{equation}
+r_i^{(m)} = -\left. \frac{\partial \ell(y_i, F)}{\partial F} \right|_{F = F_{m-1}(\mathbf{x}_i)}
+= y_i - F_{m-1}(\mathbf{x}_i),
+\end{equation}
+so each stage literally models what the ensemble has so far failed to
+explain. The learning rate $\eta$ shrinks each stage's contribution;
+small $\eta$ with large $M$ is the standard bias--variance compromise, and
+both production models use $\eta = 0.03$ with $M \le 2000$ under early
+stopping.
+
+\subsection{XGBoost's regularised objective}
+
+XGBoost optimises a second-order approximation with an explicit complexity
+penalty on each tree:
+\begin{equation}
+\mathcal{L}^{(m)} \simeq \sum_{i=1}^{n}
+\left[ g_i h_m(\mathbf{x}_i) + \tfrac{1}{2} \tilde{h}_i h_m(\mathbf{x}_i)^2 \right]
++ \gamma T + \tfrac{1}{2}\lambda \sum_{j=1}^{T} w_j^2 ,
+\end{equation}
+with $T$ the number of leaves and $w_j$ the leaf weights. The optimal leaf
+weight is $w_j^\star = -G_j / (H_j + \lambda)$, so the $L_2$ term shrinks
+leaves supported by few rows --- which is precisely the situation in the
+small composite rules of \Cref{sec:fold-natamycin}.
+
+\subsection{Leaf-wise versus depth-wise growth}
+
+LightGBM grows leaf-wise: at each step it splits the leaf offering the
+largest loss reduction anywhere in the tree, producing deep, unbalanced
+trees that chase the hardest regions. XGBoost grows depth-wise to a fixed
+\texttt{max\_depth}, producing balanced trees. LightGBM's strategy is
+typically more sample-efficient and more prone to over-specialising on
+small regions; \texttt{num\_leaves=31} and
+\texttt{min\_child\_samples=20} are the two settings that bound it here.
+
+\section{Production configurations}
+
+\begin{center}\small
+\begin{tabular}{lp{5.3cm}p{5.3cm}}
+\toprule
+& LightGBM & XGBoost \\
+\midrule
+Rounds & \texttt{n\_estimators=2000}, early stopping 50 &
+\texttt{n\_estimators=2000}, \texttt{early\_stopping\_rounds=50} \\
+Learning rate & \texttt{0.03} & \texttt{0.03} \\
+Tree shape & \texttt{num\_leaves=31} (leaf-wise) & \texttt{max\_depth=6} (depth-wise) \\
+Leaf constraint & \texttt{min\_child\_samples=20} & default $\lambda$, $\gamma$ \\
+Sampling & \texttt{subsample=0.9}, \texttt{colsample\_bytree=0.9} & identical \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Early stopping monitors the validation partition, which means that under
+the original protocol the stopping iteration was selected using data drawn
+from the same generation rules as the test set. In the leave-rule-out
+harness, boosting rounds are fixed a priori rather than early-stopped,
+which removes that dependency at the cost of not tuning $M$ per fold. The
+difference is documented rather than silently absorbed.
+
+\section{Original results}
+
+From \Cref{tab:tab_production_v7}: LightGBM is the best model on five of
+the six V7 specialists under the original protocol, reaching $0.971$
+(soft/general), $0.920$ (semi-hard/general) and $0.932$ (hard/general).
+XGBoost is within one or two points everywhere. The gap between them, and
+between either and Random Forest, is well inside the range that a different
+random seed could produce --- which is itself a hint that the protocol was
+not discriminating between models.
+
+\section{Revised results}
+
+\begin{table}[htbp]\centering\small
+\caption{LightGBM and XGBoost under leave-one-rule-out, per specialist.
+Computed from the $168$ reconstructed fold results.}
+\label{tab:lgbm_xgb_loro}
+\begin{tabular}{llrrrrr}
+\toprule
+Specialist & Model & folds & mean $\rsq$ & median $\rsq$ & min $\rsq$ & pooled OOF $\rsq$ \\
+\midrule
+\multirow{2}{*}{soft / general} & LightGBM & 7 & 0.850 & 0.892 & 0.472 & 0.960 \\
+ & XGBoost & 7 & 0.651 & 0.806 & $-0.279$ & 0.957 \\
+\addlinespace[2pt]
+\multirow{2}{*}{semi-hard / general} & LightGBM & 12 & 0.824 & 0.888 & 0.562 & 0.940 \\
+ & XGBoost & 12 & 0.748 & 0.840 & 0.270 & 0.918 \\
+\addlinespace[2pt]
+\multirow{2}{*}{hard / general} & LightGBM & 8 & 0.256 & 0.714 & $-2.665$ & 0.669 \\
+ & XGBoost & 8 & $-0.033$ & 0.568 & $-2.305$ & 0.665 \\
+\addlinespace[2pt]
+\multirow{2}{*}{soft / safety} & LightGBM & 11 & 0.702 & 0.831 & $-0.256$ & 0.867 \\
+ & XGBoost & 11 & 0.589 & 0.671 & $-0.164$ & 0.786 \\
+\addlinespace[2pt]
+\multirow{2}{*}{semi-hard / safety} & LightGBM & 8 & 0.860 & 0.926 & 0.617 & 0.811 \\
+ & XGBoost & 8 & 0.649 & 0.690 & 0.269 & 0.655 \\
+\addlinespace[2pt]
+\multirow{2}{*}{hard / safety} & LightGBM & 10 & 0.839 & 0.934 & 0.425 & 0.730 \\
+ & XGBoost & 10 & 0.697 & 0.736 & 0.366 & 0.593 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\tbllong{tab_folds_lightgbm}{Complete LightGBM fold results for every held-out
+generation rule.}
+
+\tbllong{tab_folds_xgboost}{Complete XGBoost fold results for every held-out
+generation rule.}
+
+\begin{findingbox}[title=LightGBM is the strongest model under the revised protocol]
+LightGBM has the highest median fold $\rsq$ in five of six specialists and
+the highest pooled out-of-fold $\rsq$ in all six. Its advantage is largest
+exactly where the problem is hardest: on hard/general it reaches mean
+$\rsq = 0.256$ against XGBoost's $-0.033$ and Random Forest's $-0.097$,
+and on the clostridia fold it is the least badly wrong of the three
+($-2.665$ against $-2.305$ and $-3.860$; MAE $55.1$ days against $57.3$
+and $67.4$).
+
+This ordering was not visible under the original protocol, where all three
+sat within two points of each other. An evaluation that cannot distinguish
+between candidate models cannot be used to select between them.
+\end{findingbox}
+
+\section{Do the three ensembles fail on the same rules?}
+
+\fig{fig34_model_agreement}{0.98}{%
+  Pairwise per-fold $\rsq$ for the three ensembles across all $56$ folds,
+  clipped at $-3$. Correlations: Random Forest--LightGBM $r = 0.939$,
+  Random Forest--XGBoost $r = 0.877$, LightGBM--XGBoost $r = 0.878$.}
+
+The agreement is high. All three models place the clostridia fold as their
+single worst result, and all three struggle on the shredded-cheddar rule.
+The failures are shared, not model-specific.
+
+\begin{findingbox}[title=What correlated failure does and does not imply]
+Correlation of $r \approx 0.9$ across three structurally different
+learners --- one bagging, two boosting, one depth-wise and one leaf-wise
+--- indicates that fold difficulty is a property of the \emph{data
+partition}, not of any model's inductive bias.
+
+The careful non-claim: this does not by itself prove the cause is
+mechanism novelty. Three tree ensembles share the extrapolation bound of
+\cref{eq:rf-bound}, so they would be expected to fail together on any
+out-of-range target regardless of why the target is out of range. The
+causal attribution in \Cref{sec:fold-clostridia} rests on the two
+controlled comparisons, not on this correlation.
+\end{findingbox}
+
+\fig{fig35_rule_model_heatmap_r2}{0.62}{%
+  Per-rule $\rsq$ for all three models across all $56$ held-out rules,
+  sorted by mean difficulty.}
+
+\fig{fig36_rule_model_heatmap_mae}{0.62}{%
+  The same grid in MAE (days), which removes the variance-denominator
+  effect. Several rules that look poor in $\rsq$ have small day-scale
+  errors.}

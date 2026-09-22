@@ -1,0 +1,212 @@
+\chapter{Why synthetic data, and what it costs}
+\label{ch:synthetic}
+
+\begin{saybox}[title=What to say at the start of this section]
+This is the section most likely to be interrupted with a direct question.
+Do not begin with a justification. Begin with the honest statement of what
+the repository can and cannot show, then give the scientific argument for
+why synthetic expansion was an intelligible choice, then state plainly
+what it costs. The panel will trust the argument more if the limitation
+is volunteered rather than extracted.
+\end{saybox}
+
+\section{The evidence limitation, stated first}
+\label{sec:limit-evidence}
+
+Before any argument about motivation, the following must be stated,
+because it constrains everything that can honestly be claimed afterwards.
+
+\begin{limitbox}[title=Limitation 1 --- the original experimental observations are not in this repository]
+Every dataset file used for training at any recoverable point in this
+project's history was loaded and its \texttt{data\_origin} column
+value-counted. The result appears in \Cref{tab:tab_dataset_versions}: across
+five successive dataset versions spanning 30\,500 to 48\,240 rows, every
+single \texttt{data\_origin} value is a synthetic-generation tag. No file
+contains a \texttt{real}, \texttt{experimental}, or
+\texttt{real\_paper\_derived} row.
+
+Consequently the original experimental or literature-extracted
+observations that must have calibrated the generation process cannot be
+counted, characterised, or audited from this repository. Any figure for
+their number --- including the figure of roughly 400 that has been quoted
+informally --- is unverifiable here. This report does not assert one.
+\end{limitbox}
+
+\begin{limitbox}[title=Limitation 2 --- the generation code is not in this repository]
+Every Python file in the repository was searched for code that
+\emph{assigns} \texttt{source\_rule\_id}, as opposed to reading it for
+grouping or splitting. There is none. Every script that touches the column
+--- the training driver, the serving layer, the diagnostic experiments ---
+consumes it as a pre-existing column of an already-generated file. The
+parameter distributions, sampling ranges, target equations, noise model and
+censoring mechanism of the generator are therefore not inspectable here.
+
+Everything this report says about generation-rule behaviour is inferred
+\emph{statistically from the generated data} and is labelled as such. No
+generation equation is reconstructed or guessed.
+\end{limitbox}
+
+\tbl{tab_dataset_versions}{Every training dataset version in the
+repository, with the \texttt{data\_origin} values actually present in it.
+Produced by loading each file and value-counting the column.}
+
+\noindent A direct consequence for the meeting: the honest answer to
+``how many real observations did you start with'' is that the number is
+not recoverable from this repository and should be requested from whoever
+maintains the generation pipeline. Stating that is stronger than quoting a
+number that cannot be substantiated.
+
+\section{Why a small experimental corpus is hard to model, stated precisely}
+
+The claim ``there was not enough data'' is too loose to defend in front of
+a panel, and it is also not quite the right claim. There is no universal
+minimum row count for a Random Forest. What matters is the relationship
+between the diversity of the relationships to be learned and the number of
+\emph{independent} observations supporting them. Four specific structural
+difficulties apply here, and each can be quantified from the data that
+does exist.
+
+\subsection{Fragmentation across specialists}
+
+The architecture divides whatever data exists by six. \Cref{fig:fig04_dataset_composition}
+shows the division for the synthetic corpus, and the same division would
+apply to any real corpus. If a real corpus of a few hundred observations
+were distributed across six specialists in the proportions the synthetic
+corpus uses, the smallest specialist --- hard/safety-endpoint, holding
+$6.6\%$ of the corpus --- would receive on the order of tens of rows.
+Tens of rows cannot support the estimation of a nonlinear function over
+twenty-plus heterogeneous inputs, and this conclusion does not depend on
+knowing the exact original count.
+
+\subsection{Dimensionality and heterogeneity of the input space}
+
+The feature space is not merely high-dimensional; it is
+\emph{combinatorial}. A single prediction is conditioned on the cheese
+product, its physical form, its composition, the treatment and its
+concentration, the application method, the storage temperature, the
+packaging and its headspace gas composition, and the specific indicator
+being tracked with its threshold. In the V7 corpus the hard/general
+specialist alone spans six base cheese products, four treatment
+ingredients including the untreated control, and eight distinct indicator
+types --- and that is after synthetic expansion. The product of the
+observed level counts is far larger than any realistic experimental
+programme could populate.
+
+\subsection{Sparse and uneven coverage}
+
+Coverage is not uniform across that space, and the unevenness is severe
+even in the expanded corpus. \Cref{fig:fig06_rule_size_distribution,fig:fig07_rule_concentration}
+show it directly: in the soft/general specialist, one generation rule
+contributes $5\,654$ of $8\,800$ rows while two others contribute $17$ and
+$8$ rows respectively --- a ratio of roughly $700$:$1$ between the largest
+and smallest. Regions of the space represented by single-digit row counts
+cannot support reliable estimation, and \Cref{ch:folds} shows exactly what
+happens when the model is asked to predict them.
+
+\subsection{Statistical estimability}
+
+The relevant formal statement is the bias--variance decomposition. For a
+model $\hat{f}$ trained on a random sample $\mathcal{D}$, the expected
+squared error at a point $\mathbf{x}_0$ decomposes as
+\begin{equation}
+\mathbb{E}_{\mathcal{D}}\!\left[\left(y_0 - \hat{f}(\mathbf{x}_0)\right)^2\right]
+=
+\underbrace{\sigma^2_{\varepsilon}}_{\text{irreducible}}
++
+\underbrace{\left(\mathbb{E}_{\mathcal{D}}[\hat{f}(\mathbf{x}_0)] - f(\mathbf{x}_0)\right)^2}_{\text{bias}^2}
++
+\underbrace{\mathbb{E}_{\mathcal{D}}\!\left[\left(\hat{f}(\mathbf{x}_0) - \mathbb{E}_{\mathcal{D}}[\hat{f}(\mathbf{x}_0)]\right)^2\right]}_{\text{variance}} .
+\end{equation}
+A flexible learner drives the bias term down but leaves the variance term
+governed by how much independent information $\mathcal{D}$ carries near
+$\mathbf{x}_0$. The key word is \emph{independent}: the variance term does
+not shrink when the same underlying relationship is resampled, only when
+genuinely new information is added. This is the precise sense in which
+synthetic expansion can fail to help, and it is the theoretical statement
+of the empirical result in \Cref{ch:discovery}.
+
+\section{The trade-off that synthetic expansion actually makes}
+
+Synthetic generation from literature-constrained rules addresses coverage:
+it populates combinations of temperature, concentration, packaging and
+indicator that no experimental programme enumerated, in a way that is
+consistent with the relationships the source literature reports. That is a
+legitimate and common strategy, and it makes the six-specialist
+architecture trainable at all.
+
+What it does not do is add independent scientific information. This
+distinction deserves a formal statement, because it is the intellectual
+core of the entire investigation.
+
+\begin{findingbox}[title=Sample size is not information]
+Let $n$ be the number of rows in a training set and let $G$ be the number
+of distinct generative mechanisms that produced them. Classical learning
+theory bounds depend on the number of \emph{independent} draws. When each
+mechanism $g$ contributes $n_g$ rows that are deterministic or
+near-deterministic functions of $g$'s parameters, the effective number of
+independent units is closer to $G$ than to $n = \sum_g n_g$.
+
+In the V7 corpus, $n = 34\,000$ but $G \in [7, 12]$ per specialist. The
+ratio $n/G$ exceeds $1\,000$ for the largest rules. A model that learns
+$G$ relationships well will score highly on any test set drawn from those
+same $G$ relationships, at any value of $n$, and \emph{regardless of its
+own capacity}.
+\end{findingbox}
+
+\fig{fig05_rule_counts}{0.92}{%
+  The quantity that governs generalization is not the row count but the
+  rule count. Each specialist is built from between seven and twelve
+  distinct \texttt{source\_rule\_id} values. Counted directly from the
+  three V7 specialist files.}
+
+\fig{fig07_rule_concentration}{0.9}{%
+  Cumulative share of each specialist's rows as generation rules are added
+  largest-first. In four of the six specialists, two rules account for more
+  than $90\%$ of all rows.}
+
+\section{Alternatives that existed, and why they are not free}
+
+The panel may reasonably ask whether synthetic expansion was the only
+option. It was not, and it is worth being explicit about the alternatives
+and their own costs:
+
+\begin{description}[leftmargin=1.5em, style=nextline, font=\bfseries\color{dgreen}]
+\item[Train simpler models on the real data only] Fewer parameters would
+  reduce variance, but the six-specialist architecture would still divide
+  a few hundred observations by six, and the categorical inputs
+  (product, indicator, packaging) would still be sparsely populated. This
+  option trades one failure mode for another rather than removing it.
+\item[Hierarchical or multi-task modelling] Fitting one model with
+  category-level random effects, rather than six independent models, would
+  pool statistical strength across categories while still allowing
+  category-specific behaviour. This is a genuine and largely untried
+  alternative in this project, and \Cref{ch:proposals} lists it as a
+  recommendation.
+\item[Transfer from a mechanistic baseline] Predictive microbiology
+  supplies parametric growth models whose parameters could be fitted to the
+  small real corpus, with machine learning used only for the residual.
+  This constrains the model with physics instead of with synthetic rows.
+\item[Collecting more experimental data] The scientifically strongest
+  option and the slowest: shelf-life studies run for the duration of the
+  shelf life being measured, across multiple temperatures, with
+  microbiological enumeration at each time point.
+\end{description}
+
+\begin{questionbox}[title=Likely question --- ``Why did you use synthetic data at all?'']
+\emph{Suggested answer.} Because the prediction problem is split across
+six specialists and a combinatorial input space, and the experimental
+corpus available at the time could not populate that space --- some
+specialists would have received only tens of rows. Synthetic generation
+under literature-constrained rules was used to make the architecture
+trainable, not because synthetic rows were believed equivalent to
+measurements.
+
+What we have since established, and what this report documents, is that
+expansion of this kind increases sample size without increasing
+independent information: the corpus has 34\,000 rows but only seven to
+twelve generation rules per specialist. That is exactly why the original
+evaluation was optimistic, and it is why we now evaluate by holding out
+whole generation rules. I would also say plainly that the original
+experimental observations are not present in this repository, so I cannot
+give you a verified count for them.
+\end{questionbox}

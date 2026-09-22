@@ -1,0 +1,30 @@
+\begin{tabular}{llrrr}
+\toprule
+Specialist & Model & pooled OOF $R^2$ & MAE (d) & RMSE (d) \\
+\midrule
+soft/general shelf life & random\_forest & \textbf{0.954} & 3.23 & 5.60 \\
+ & lightgbm & \textbf{0.960} & 2.94 & 5.21 \\
+ & xgboost & \textbf{0.957} & 3.17 & 5.44 \\
+\addlinespace[2pt]
+semi-hard/general shelf life & random\_forest & \textbf{0.921} & 8.81 & 13.62 \\
+ & lightgbm & \textbf{0.940} & 6.98 & 11.85 \\
+ & xgboost & \textbf{0.918} & 8.20 & 13.84 \\
+\addlinespace[2pt]
+hard/general shelf life & random\_forest & \textbf{0.582} & 14.56 & 28.60 \\
+ & lightgbm & \textbf{0.669} & 13.56 & 25.44 \\
+ & xgboost & \textbf{0.665} & 15.64 & 25.59 \\
+\addlinespace[2pt]
+soft/safety endpoint & random\_forest & \textbf{0.844} & 4.39 & 6.44 \\
+ & lightgbm & \textbf{0.867} & 3.59 & 5.95 \\
+ & xgboost & \textbf{0.786} & 5.58 & 7.55 \\
+\addlinespace[2pt]
+semi-hard/safety endpoint & random\_forest & \textbf{0.755} & 7.07 & 9.78 \\
+ & lightgbm & \textbf{0.811} & 5.07 & 8.58 \\
+ & xgboost & \textbf{0.655} & 9.15 & 11.60 \\
+\addlinespace[2pt]
+hard/safety endpoint & random\_forest & \textbf{0.642} & 9.13 & 12.49 \\
+ & lightgbm & \textbf{0.730} & 6.20 & 10.87 \\
+ & xgboost & \textbf{0.593} & 10.11 & 13.33 \\
+\addlinespace[2pt]
+\bottomrule
+\end{tabular}

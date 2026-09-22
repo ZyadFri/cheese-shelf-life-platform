@@ -1,0 +1,36 @@
+\begin{tabular}{llrrrrrr}
+\toprule
+Specialist & Model & $n_{\text{train}}$ & $n_{\text{test}}$ & train $R^2$ & val $R^2$ & test $R^2$ & test RMSE \\
+\midrule
+soft/general shelf life & random\_forest & 10,035 & 2,150 & 0.993 & 0.927 & \textbf{0.930} & 7.62 \\
+ & lightgbm & 10,035 & 2,150 & 0.993 & 0.947 & \textbf{0.936} & 7.28 \\
+ & xgboost & 10,035 & 2,150 & 0.996 & 0.943 & \textbf{0.940} & 7.03 \\
+ & ebm & 10,035 & 2,150 & 0.950 & 0.883 & \textbf{0.894} & 9.35 \\
+\addlinespace[2pt]
+semi-hard/general shelf life & random\_forest & 7,330 & 1,570 & 0.993 & 0.877 & \textbf{0.889} & 26.65 \\
+ & lightgbm & 7,330 & 1,570 & 0.974 & 0.882 & \textbf{0.905} & 24.65 \\
+ & xgboost & 7,330 & 1,570 & 0.980 & 0.882 & \textbf{0.896} & 25.74 \\
+ & ebm & 7,330 & 1,570 & 0.969 & 0.859 & \textbf{0.889} & 26.61 \\
+\addlinespace[2pt]
+hard/general shelf life & random\_forest & 3,345 & 720 & 0.988 & 0.866 & \textbf{0.847} & 33.67 \\
+ & lightgbm & 3,345 & 720 & 0.996 & 0.889 & \textbf{0.876} & 30.39 \\
+ & xgboost & 3,345 & 720 & 0.998 & 0.886 & \textbf{0.866} & 31.54 \\
+ & ebm & 3,345 & 720 & 0.963 & 0.782 & \textbf{0.801} & 38.45 \\
+\addlinespace[2pt]
+soft/safety endpoint & random\_forest & 2,935 & 630 & 0.989 & 0.884 & \textbf{0.907} & 5.54 \\
+ & lightgbm & 2,935 & 630 & 0.975 & 0.934 & \textbf{0.917} & 5.24 \\
+ & xgboost & 2,935 & 630 & 1.000 & 0.934 & \textbf{0.912} & 5.38 \\
+ & ebm & 2,935 & 630 & 0.948 & 0.775 & \textbf{0.855} & 6.91 \\
+\addlinespace[2pt]
+semi-hard/safety endpoint & random\_forest & 780 & 170 & 0.981 & 0.778 & \textbf{0.777} & 21.41 \\
+ & lightgbm & 780 & 170 & 0.983 & 0.763 & \textbf{0.861} & 16.89 \\
+ & xgboost & 780 & 170 & 0.993 & 0.749 & \textbf{0.788} & 20.88 \\
+ & ebm & 780 & 170 & 0.984 & 0.733 & \textbf{0.831} & 18.66 \\
+\addlinespace[2pt]
+hard/safety endpoint & random\_forest & 530 & 110 & 0.986 & 0.843 & \textbf{0.753} & 30.57 \\
+ & lightgbm & 530 & 110 & 0.995 & 0.866 & \textbf{0.786} & 28.44 \\
+ & xgboost & 530 & 110 & 0.999 & 0.863 & \textbf{0.782} & 28.75 \\
+ & ebm & 530 & 110 & 0.993 & 0.709 & \textbf{0.703} & 33.51 \\
+\addlinespace[2pt]
+\bottomrule
+\end{tabular}

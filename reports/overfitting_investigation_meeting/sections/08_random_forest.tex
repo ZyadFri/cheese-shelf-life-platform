@@ -1,0 +1,220 @@
+\chapter{Random Forest: complete case study}
+\label{ch:rf}
+
+\begin{saybox}[title=What to say at the start of this section]
+Give the intuition for a single tree first --- it partitions the
+formulation space into regions and predicts the average shelf life inside
+each region --- then explain that a forest averages many such partitions
+built on perturbed data. Only then bring in the notation. Use project
+features in the examples: a split on storage temperature, a split on pH.
+\end{saybox}
+
+\section{How Random Forest works}
+
+\subsection{A single regression tree}
+
+A regression tree recursively partitions the feature space. At each node
+it searches over features $j$ and thresholds $t$ for the split that most
+reduces the sum of squared deviations within the resulting children:
+\begin{equation}
+(j^\star, t^\star) = \argmin_{j, t}
+\left[
+\sum_{i \in L(j,t)} (y_i - \bar{y}_{L})^2
++
+\sum_{i \in R(j,t)} (y_i - \bar{y}_{R})^2
+\right],
+\end{equation}
+where $L$ and $R$ are the rows falling left and right of the threshold.
+For the data at hand a first split might be on
+\texttt{storage\_temperature\_c} at $\approx 8^\circ$C, separating chilled
+from abused storage; a subsequent split might be on
+\texttt{matrix\_water\_activity} or on the one-hot indicator for
+\texttt{indicator\_type = clostridia}. Prediction for a new row is the mean
+target of the training rows in the leaf it falls into:
+\begin{equation}
+\hat{f}_{\text{tree}}(\mathbf{x}) = \frac{1}{|\{i : \mathbf{x}_i \in \ell(\mathbf{x})\}|}
+\sum_{i \,:\, \mathbf{x}_i \in \ell(\mathbf{x})} y_i .
+\end{equation}
+
+Two properties of this rule matter for everything in \Cref{ch:folds}:
+splitting is \emph{axis-aligned}, and prediction is a \emph{local average
+of training targets}. The second property has a hard consequence:
+\begin{equation}
+\min_i y_i \;\le\; \hat{f}_{\text{tree}}(\mathbf{x}) \;\le\; \max_i y_i
+\qquad \text{for all } \mathbf{x},
+\label{eq:rf-bound}
+\end{equation}
+a tree, and therefore a forest, \textbf{can never predict outside the range
+of the training targets}. It cannot extrapolate. Remember this equation;
+it explains the single worst fold in the entire study.
+
+\subsection{From tree to forest}
+
+The forest draws $B$ bootstrap resamples of the training set, fits an
+unpruned tree to each while restricting each split to a random subset of
+features, and averages:
+\begin{equation}
+\hat{f}_{\text{RF}}(\mathbf{x}) = \frac{1}{B} \sum_{b=1}^{B} \hat{f}_{\text{tree}}^{(b)}(\mathbf{x}) .
+\end{equation}
+If the individual trees have variance $\sigma^2$ and pairwise correlation
+$\rho$, the ensemble variance is
+\begin{equation}
+\operatorname{Var}\!\left[\hat{f}_{\text{RF}}\right]
+= \rho \sigma^2 + \frac{1-\rho}{B}\sigma^2
+\;\xrightarrow[B \to \infty]{}\; \rho\sigma^2 .
+\label{eq:rf-variance}
+\end{equation}
+Feature subsampling exists to reduce $\rho$: it is the only term that
+survives in the limit. This is why adding trees always helps a little and
+never hurts, and why the production setting of $400$ trees is a
+computational choice rather than a regularization choice.
+
+Averaging over the bound in \cref{eq:rf-bound} preserves it: the ensemble
+is also confined to the convex hull of the training targets.
+
+\section{Production configuration, recovered from source}
+
+From \evd{train\_specialists.py}:
+\begin{center}\small
+\texttt{RandomForestRegressor(n\_estimators=400, max\_depth=None,\\
+min\_samples\_leaf=2, random\_state=42, n\_jobs=-1)}
+\end{center}
+
+\begin{description}[leftmargin=1.5em, style=nextline, font=\bfseries\color{dgreen}]
+\item[\texttt{n\_estimators=400}] $B = 400$ in \cref{eq:rf-variance}; the
+  $\frac{1-\rho}{B}\sigma^2$ term is essentially exhausted at this value.
+\item[\texttt{max\_depth=None}] trees grow until leaves are pure or cannot
+  be split. Combined with the next parameter this is the highest-capacity
+  setting available.
+\item[\texttt{min\_samples\_leaf=2}] leaves may contain as few as two
+  training rows --- minimal smoothing, near-maximal flexibility.
+\item[\texttt{random\_state=42}] shared with the splitter, so the whole
+  pipeline is reproducible from one seed.
+\end{description}
+
+The leave-rule-out experiments use \emph{the same} configuration, verified
+by reading the model factory rather than trusting its name, so the
+comparison between protocols is not confounded by a hyperparameter change.
+The only differences between the production run and the diagnostic run are
+the partition assignment and the fact that the diagnostic harness refits
+the preprocessing inside every fold.
+
+\section{Original Random Forest results}
+
+\begin{table}[htbp]\centering\small
+\caption{Random Forest under the original context-holdout protocol, V7
+dataset. Extracted from the stored production metrics.}
+\label{tab:rf_original}
+\begin{tabular}{lrrrrrr}
+\toprule
+Specialist & $n_{\text{train}}$ & $n_{\text{test}}$ & train $\rsq$ & val $\rsq$ & test $\rsq$ & test RMSE (d) \\
+\midrule
+soft / general & 6\,160 & 1\,320 & 0.997 & 0.955 & \textbf{0.956} & 5.99 \\
+semi-hard / general & 5\,040 & 1\,080 & 0.995 & 0.925 & \textbf{0.905} & 14.57 \\
+hard / general & 4\,200 & 900 & 0.994 & 0.910 & \textbf{0.927} & 11.68 \\
+soft / safety & 3\,360 & 720 & 0.997 & 0.548 & \textbf{0.572} & 10.62 \\
+semi-hard / safety & 2\,800 & 600 & 0.997 & 0.015 & \textbf{0.342} & 15.76 \\
+hard / safety & 2\,240 & 480 & 0.996 & $-0.131$ & \textbf{$-0.097$} & 21.86 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The training $\rsq$ of $0.994$--$0.997$ across every specialist is exactly
+what \texttt{max\_depth=None, min\_samples\_leaf=2} predicts and carries no
+information about generalization. The informative contrast is between the
+quality specialists (test $\rsq \ge 0.905$) and the safety specialists
+(test $\rsq$ from $0.572$ down to $-0.097$), under an identical protocol
+and an identical model.
+
+\section{Revised Random Forest results}
+
+The same configuration was re-evaluated under leave-one-rule-out
+cross-validation across all $56$ folds, with every out-of-fold prediction
+retained.
+
+\begin{table}[htbp]\centering\small
+\caption{Random Forest: original context-holdout against leave-rule-out,
+per specialist. Pooled OOF $\rsq$ scores all out-of-fold predictions
+together; mean and median are over folds.}
+\label{tab:rf_revised}
+\begin{tabular}{lrrrrrr}
+\toprule
+Specialist & folds & orig.\ test $\rsq$ & pooled OOF $\rsq$ & mean fold $\rsq$ & median fold $\rsq$ & OOF MAE (d) \\
+\midrule
+soft / general & 7 & 0.956 & \textbf{0.954} & 0.604 & 0.875 & 3.23 \\
+semi-hard / general & 12 & 0.905 & \textbf{0.921} & 0.737 & 0.782 & 8.81 \\
+hard / general & 8 & 0.927 & \textbf{0.582} & $-0.097$ & 0.630 & 14.56 \\
+soft / safety & 11 & 0.572 & \textbf{0.844} & 0.692 & 0.812 & 4.39 \\
+semi-hard / safety & 8 & 0.342 & \textbf{0.755} & 0.812 & 0.856 & 7.07 \\
+hard / safety & 10 & $-0.097$ & \textbf{0.642} & 0.743 & 0.790 & 9.13 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Full per-fold mean/median/min/max values appear in
+\Cref{tab:tab_loro_ensembles_by_specialist}; the per-fold detail is in
+\Cref{tab:tab_folds_random_forest}.
+
+\begin{findingbox}[title=Two results that must be reported together]
+\textbf{(a) The quality specialists hold up better than expected.} Soft and
+semi-hard general-shelf-life retain pooled out-of-fold $\rsq$ of $0.954$
+and $0.921$ --- essentially unchanged from their context-holdout figures.
+Withholding an entire generation rule barely hurts them.
+
+\textbf{(b) Hard/general collapses, and the safety specialists improve.}
+Hard/general falls from $0.927$ to $0.582$ pooled. Meanwhile all three
+safety specialists \emph{rise} sharply --- hard/safety from $-0.097$ to
+$+0.642$. The revised protocol is not uniformly harsher; it is differently
+structured, and for the safety specialists the original single random
+context split happened to produce a harder and less representative test
+partition than the rule-wise folds do.
+\end{findingbox}
+
+The second half of that finding deserves emphasis at the meeting because
+it cuts against the expected narrative. The honest statement is not
+``stricter evaluation, lower numbers everywhere.'' It is that the original
+single split gave an unrepresentative reading in \emph{both} directions,
+and that averaging over $56$ structured folds is more informative than one
+random partition in either case.
+
+\fig{fig20_rf_fold_r2_by_rule}{0.98}{%
+  Random Forest leave-rule-out $\rsq$ for every one of the $56$ held-out
+  rules, grouped by specialist and clipped at $-2$. Most rules are
+  predicted well; a small number fail badly, and \Cref{ch:folds}
+  investigates each of them individually.}
+
+\fig{fig24_avp_soft_general}{0.62}{%
+  Random Forest out-of-fold predictions against actual shelf life for the
+  soft/general specialist, coloured by held-out rule. All $8\,800$ rows
+  appear exactly once, each predicted by a model that had never seen its
+  rule.}
+
+\fig{fig25_avp_hard_general}{0.62}{%
+  The same plot for hard/general. The detached cluster in the upper region
+  --- predicted far below the diagonal --- is a single held-out rule, and
+  it is responsible for most of this specialist's loss.}
+
+\fig{fig26_residual_histograms}{0.98}{%
+  Out-of-fold residual distributions per specialist. The hard/general panel
+  shows the pronounced negative tail produced by that same rule.}
+
+\fig{fig27_residual_vs_actual}{0.98}{%
+  Residuals against the true value for the three quality specialists. The
+  fan pattern in hard/general --- errors growing with the true value --- is
+  the signature of \cref{eq:rf-bound} binding.}
+
+\section{Where the error concentrates}
+
+\fig{fig28_error_by_product}{0.92}{%
+  Mean absolute out-of-fold error by cheese product, restricted to
+  products with at least $40$ out-of-fold rows. Bar colour encodes the
+  direction of the average bias.}
+
+\fig{fig29_error_by_ingredient}{0.92}{%
+  Mean absolute out-of-fold error by primary treatment ingredient, same
+  restriction.}
+
+\fig{fig30_signed_error_by_rule}{0.78}{%
+  Mean signed error for every held-out rule. Systematic under-prediction
+  (burgundy) dominates precisely where the held-out rule's targets lie
+  above the training range --- again \cref{eq:rf-bound}.}

@@ -1,0 +1,155 @@
+\chapter{Evidence index}
+\label{ch:evidence}
+
+Every numerical claim in this report traces to one of the following files.
+Files marked \textbf{[orig]} are original result files, unmodified by this
+audit; files marked \textbf{[recon]} were produced by re-execution during
+this audit and are labelled as reconstructions wherever they are used.
+
+\section{Result files}
+
+\begin{center}\small
+\begin{tabular}{p{6.6cm}p{1.3cm}p{5.0cm}}
+\toprule
+Path & Status & Used for \\
+\midrule
+\texttt{artifacts\_v7/\{cat\}/\{task\}/metrics.json} & [orig] &
+Production V7 results, \Cref{tab:tab_production_v7} \\
+\texttt{artifacts\_v6/\{cat\}/\{task\}/metrics.json} & [orig] &
+Production V6 results, \Cref{tab:tab_production_v6} \\
+\texttt{.../overfitting\_diagnosis/experiment\_1\_4\_results.csv} & [orig] &
+Experiments 1 and 4 \\
+\texttt{.../overfitting\_diagnosis/experiment\_2\_cv\_results.csv} & [orig] &
+Experiment 2, $K$-fold \\
+\texttt{.../overfitting\_diagnosis/experiment\_3\_extra\_regressors.csv} & [orig] &
+Experiment 5, model zoo \\
+\texttt{.../overfitting\_diagnosis/experiment\_3\_logistic\_regression.csv} & [orig] &
+Experiment 1b, logistic \\
+\texttt{.../overfitting\_diagnosis/experiment\_5\_leave\_rule\_out\_full\_zoo.csv} & [orig] &
+Leave-rule-out, 15 models \\
+\texttt{.../overfitting\_diagnosis/experiment\_6\_leave\_rule\_out\_rf\_xgb.csv} & [orig] &
+Leave-rule-out, RF and XGBoost \\
+\texttt{reports/comprehensive\_ml\_audit/master\_experiment\_results.csv} & [orig] &
+Consolidated table, 314 rows \\
+\texttt{reports/v7\_external\_test\_predictions.csv} & [orig] &
+External evaluation, \Cref{ch:external} \\
+\addlinespace[3pt]
+\texttt{rf\_fold\_predictions.csv} & [recon] &
+102\,000 row-level OOF predictions \\
+\texttt{fold\_diagnostic\_summary.csv} & [recon] &
+168 fold results, \Cref{ch:folds} \\
+\texttt{pooled\_oof\_metrics.csv} & [recon] &
+Pooled OOF, \Cref{tab:tab_pooled_oof} \\
+\texttt{rule\_overlap\_audit.csv} & [recon] &
+Rule overlap, \Cref{tab:tab_rule_overlap} \\
+\texttt{generation\_rule\_inventory.csv} & [recon] &
+Rule inventory, \Cref{tab:tab_rule_inventory} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Scripts}
+
+\begin{center}\small
+\begin{tabular}{p{6.4cm}p{6.6cm}}
+\toprule
+Script & Produces \\
+\midrule
+\texttt{scripts/experiments/overfitting\_diagnosis.py} &
+Experiments 1, 2, 4; shared preprocessing harness \\
+\texttt{scripts/experiments/model\_zoo\_expansion.py} &
+Experiment 5 and the logistic reformulation \\
+\texttt{scripts/experiments/leave\_rule\_out\_cv.py} &
+First leave-rule-out pass \\
+\texttt{scripts/experiments/leave\_rule\_out\_full\_zoo.py} &
+Leave-rule-out for 15 models \\
+\texttt{scripts/experiments/leave\_rule\_out\_rf\_xgb.py} &
+Leave-rule-out for RF and XGBoost \\
+\texttt{scripts/experiments/leave\_rule\_out\_row\_level.py} &
+Row-level reconstruction (this audit) \\
+\texttt{scripts/experiments/rule\_overlap\_audit.py} &
+Rule-overlap measurement (this audit) \\
+\texttt{scripts/experiments/make\_report\_figures\_a.py} &
+Figures 1--19 \\
+\texttt{scripts/experiments/make\_report\_figures\_b.py} &
+Figures 20--38 and the fold tables \\
+\texttt{scripts/experiments/make\_report\_tables.py} &
+All remaining \LaTeX{} tables \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Source files consulted for the protocol reconstruction}
+
+\begin{center}\small
+\begin{tabular}{p{4.6cm}p{8.4cm}}
+\toprule
+File & What was read from it \\
+\midrule
+\texttt{model\_service.py} &
+\texttt{SPLIT\_FRACTIONS} (70/15/15); \texttt{make\_context\_splits()}
+grouping and stratification logic \\
+\texttt{train\_specialists.py} &
+\texttt{SEED = 42}; all four models' hyperparameters; early-stopping
+configuration; \texttt{EXCLUDED\_COLUMNS\_V6/V7} and their documented
+rationale; \texttt{detect\_schema()} \\
+\texttt{data/raw/CHEESE\_SHELF\_LIFE\_V7\_*\_SPECIALIST\_CORRECTED.csv} &
+Rule inventory; \texttt{data\_origin}; censoring flags; per-rule feature
+and target statistics \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\chapter{Reproducing this report}
+
+From the repository root, with the project virtual environment:
+
+\begin{center}\small
+\begin{tabular}{p{12.8cm}}
+\toprule
+\texttt{.venv/Scripts/python.exe scripts/experiments/leave\_rule\_out\_row\_level.py} \\
+\texttt{.venv/Scripts/python.exe scripts/experiments/rule\_overlap\_audit.py} \\
+\texttt{.venv/Scripts/python.exe scripts/experiments/make\_report\_tables.py} \\
+\texttt{.venv/Scripts/python.exe scripts/experiments/make\_report\_figures\_a.py} \\
+\texttt{.venv/Scripts/python.exe scripts/experiments/make\_report\_figures\_b.py} \\
+\addlinespace[2pt]
+\texttt{cd reports/overfitting\_investigation\_meeting} \\
+\texttt{pdflatex overfitting\_investigation\_full\_report.tex} (three passes) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All randomness is seeded at $42$, fold construction is deterministic given
+the data, and the figure and table generators read only from stored result
+files. Re-running the pipeline end to end reproduces every number in this
+document.
+
+\section{Summary of what this report establishes}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=3pt]
+\item \textbf{Observed.} The original context-holdout protocol produced
+  $\rsq \approx 0.93$--$0.97$ on the three general-shelf-life specialists
+  and $\rsq$ between $0.59$ and $-0.10$ on the three safety specialists.
+\item \textbf{Observed.} $100\%$ of test rows in every specialist came
+  from a generation rule also present in training; context overlap was
+  zero.
+\item \textbf{Observed.} Reducing model capacity, changing $K$,
+  aggregating categories, and removing the validation set each failed to
+  change the scores materially.
+\item \textbf{Observed.} Under leave-one-rule-out, the production
+  ensembles retain median fold $\rsq$ of $0.72$--$0.79$ while linear and
+  instance-based models fall below zero.
+\item \textbf{Verified explanation.} Hard/general's collapse is caused by
+  one held-out rule carrying the only substantial representation of the
+  clostridia mechanism; established by two controlled comparisons
+  (\Cref{sec:fold-clostridia}), not inferred.
+\item \textbf{Verified observation.} All $3\,200$ hard/safety rows are
+  right-censored; the specialist predicts a lower bound on failure time,
+  not failure time.
+\item \textbf{Observed.} External literature evaluation on 21 cases gives
+  $\rsq = 0.172$, MAE $39.4$ days, with all 21 flagged out-of-support.
+\item \textbf{Unresolved.} Whether the generation rules share calibration
+  across their shared components; whether the external cases are
+  independent of the rules. Both require the generation pipeline, which is
+  not in this repository.
+\end{enumerate}

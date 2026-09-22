@@ -52,3 +52,6 @@ archive/
 presentation_demo/output/
 presentation_demo/auth/
 presentation_demo/node_modules/
+
+# Row-level OOF predictions for the overfitting report (37MB raw; gzipped copy is committed)
+reports/overfitting_investigation_meeting/rf_fold_predictions.csv

@@ -1,0 +1,151 @@
+\chapter{Cross-model comparison}
+\label{ch:crossmodel}
+
+\begin{saybox}[title=What to say at the start of this section]
+The point of this chapter is not to crown a winner. It is to show that the
+original protocol could not rank models at all, and the revised one can.
+That is a statement about the evaluation, and it is the reason the
+evaluation had to change before any model-selection decision could be
+trusted.
+\end{saybox}
+
+\section{The same models under the two protocols}
+
+\begin{table}[htbp]\centering\small
+\caption{Every evaluated configuration under both protocols. The
+context-holdout column is the mean test $\rsq$ across the six specialists;
+the leave-rule-out columns are the mean and median of the per-fold values,
+averaged over the six specialists. Sorted by leave-rule-out median.}
+\label{tab:both_protocols}
+\begin{tabular}{lrrrr}
+\toprule
+Model & context-holdout $\rsq$ & LORO mean & LORO median & rank change \\
+\midrule
+LightGBM (production) & --- & 0.627 & \textbf{0.780} & --- \\
+Random Forest (production) & --- & 0.582 & \textbf{0.791} & --- \\
+XGBoost (production) & --- & 0.550 & \textbf{0.719} & --- \\
+extra trees & 0.608 & 0.209 & 0.492 & $\downarrow$ \\
+gradient boosting & 0.597 & 0.280 & 0.450 & $\downarrow$ \\
+small MLP & 0.595 & 0.219 & 0.342 & $\downarrow$ \\
+shallow random forest & 0.597 & $-0.230$ & 0.278 & $\downarrow\downarrow$ \\
+shallow decision tree & 0.553 & $-1.733$ & 0.192 & $\downarrow\downarrow$ \\
+RBF SVR & 0.557 & $-0.454$ & $-0.153$ & $\downarrow\downarrow$ \\
+AdaBoost & 0.601 & $-1.248$ & $-0.178$ & $\downarrow\downarrow\downarrow$ \\
+elastic net & 0.592 & $-0.772$ & $-0.675$ & $\downarrow\downarrow\downarrow$ \\
+lasso & 0.595 & $-0.690$ & $-0.736$ & $\downarrow\downarrow\downarrow$ \\
+Bayesian ridge & 0.597 & $-0.872$ & $-0.795$ & $\downarrow\downarrow\downarrow$ \\
+ridge regression & 0.594 & $-0.874$ & $-0.798$ & $\downarrow\downarrow\downarrow$ \\
+PLS regression & 0.594 & $-1.106$ & $-0.952$ & $\downarrow\downarrow\downarrow$ \\
+$k$-NN ($k=5$) & 0.461 & $-3.412$ & $-1.537$ & $\downarrow\downarrow\downarrow$ \\
+dummy (mean) & $-0.004$ & $-15.637$ & $-12.833$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{findingbox}[title=The discriminating power of the two protocols]
+Under the original protocol, thirteen of the sixteen non-trivial
+configurations fall within the band $[0.55, 0.61]$ --- a spread of six
+hundredths of an $\rsq$ point separating a single shallow decision tree
+from a 2000-round gradient ensemble.
+
+Under leave-rule-out, the same configurations span from $+0.79$ to
+$-1.54$ in median $\rsq$: a range more than twenty times wider. The
+revised protocol does not merely give lower numbers; it gives
+\emph{informative} numbers.
+\end{findingbox}
+
+\section{Per-specialist comparison for the production families}
+
+\tbl{tab_loro_ensembles_by_specialist}{Leave-rule-out results by
+specialist for the three production ensembles (repeated here for the
+cross-model comparison).}
+
+\begin{table}[htbp]\centering\small
+\caption{Original context-holdout test $\rsq$ against pooled out-of-fold
+$\rsq$ under leave-rule-out, per specialist and model. EBM appears in the
+left column only; it has no leave-rule-out evaluation.}
+\label{tab:protocol_delta}
+\begin{tabular}{llrrr}
+\toprule
+Specialist & Model & context-holdout & pooled OOF (LORO) & $\Delta$ \\
+\midrule
+\multirow{3}{*}{soft / general}
+ & Random Forest & 0.956 & 0.954 & $-0.002$ \\
+ & LightGBM & 0.971 & 0.960 & $-0.011$ \\
+ & XGBoost & 0.968 & 0.957 & $-0.011$ \\
+\addlinespace[2pt]
+\multirow{3}{*}{semi-hard / general}
+ & Random Forest & 0.905 & 0.921 & $+0.016$ \\
+ & LightGBM & 0.920 & 0.940 & $+0.020$ \\
+ & XGBoost & 0.927 & 0.918 & $-0.009$ \\
+\addlinespace[2pt]
+\multirow{3}{*}{hard / general}
+ & Random Forest & 0.927 & 0.582 & $\mathbf{-0.345}$ \\
+ & LightGBM & 0.932 & 0.669 & $\mathbf{-0.263}$ \\
+ & XGBoost & 0.933 & 0.665 & $\mathbf{-0.268}$ \\
+\addlinespace[2pt]
+\multirow{3}{*}{soft / safety}
+ & Random Forest & 0.572 & 0.844 & $+0.272$ \\
+ & LightGBM & 0.573 & 0.867 & $+0.294$ \\
+ & XGBoost & 0.594 & 0.786 & $+0.192$ \\
+\addlinespace[2pt]
+\multirow{3}{*}{semi-hard / safety}
+ & Random Forest & 0.342 & 0.755 & $+0.413$ \\
+ & LightGBM & 0.303 & 0.811 & $+0.508$ \\
+ & XGBoost & 0.317 & 0.655 & $+0.338$ \\
+\addlinespace[2pt]
+\multirow{3}{*}{hard / safety}
+ & Random Forest & $-0.097$ & 0.642 & $+0.739$ \\
+ & LightGBM & $-0.024$ & 0.730 & $+0.754$ \\
+ & XGBoost & $-0.011$ & 0.593 & $+0.604$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{findingbox}[title=The protocol change is not uniformly a penalty]
+Only one specialist --- hard/general --- loses substantially, and the loss
+is traced in \Cref{sec:fold-clostridia} to one held-out rule. The soft and
+semi-hard quality specialists are essentially unchanged. All three safety
+specialists \emph{gain}, by between $0.19$ and $0.75$ $\rsq$ points.
+
+The honest summary is therefore not ``the real numbers are lower.'' It is
+that a single random context split gave an unreliable reading in both
+directions, and that a $56$-fold structured evaluation replaces it with a
+distribution rather than a point.
+\end{findingbox}
+
+\section{Shared versus idiosyncratic failures}
+
+\fig{fig34_model_agreement}{0.98}{%
+  Pairwise agreement between the three ensembles at fold level
+  (reproduced). $r = 0.877$--$0.939$.}
+
+All three models rank the clostridia fold as their worst result, and all
+three are positive on the majority of folds. The differences between them
+are concentrated in the mid-range folds, where LightGBM's leaf-wise growth
+appears to capture rule-to-rule differences that the depth-limited XGBoost
+configuration does not.
+
+\begin{limitbox}[title=A caution about attributing correlated errors]
+Correlated failure across models is consistent with a shared data
+limitation, but it is also consistent with a shared inductive bias: all
+three are tree ensembles and all three inherit the extrapolation bound of
+\cref{eq:rf-bound}. Distinguishing these would require a model family that
+can extrapolate --- a parametric or mechanistic model --- evaluated on the
+same folds. That experiment has not been run, and this report does not
+claim the distinction has been made.
+\end{limitbox}
+
+\section{Recommended model under the revised protocol}
+
+On the evidence assembled here, LightGBM is the appropriate production
+choice: highest pooled out-of-fold $\rsq$ in all six specialists, highest
+median fold $\rsq$ in five of six, and the smallest error on the single
+hardest fold in the study. Random Forest is a close second with a
+marginally higher median on two specialists and a more interpretable
+uncertainty story.
+
+That recommendation carries one explicit caveat: it is a recommendation
+about performance on \emph{synthetic rule transfer}, which is the best
+evidence currently available and is not the same thing as real-world
+accuracy. \Cref{ch:external} presents what real-world evidence exists.

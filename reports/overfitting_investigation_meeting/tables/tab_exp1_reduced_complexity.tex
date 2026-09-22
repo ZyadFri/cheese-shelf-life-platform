@@ -1,0 +1,36 @@
+\begin{tabular}{llrrrr}
+\toprule
+Specialist & Model & train $R^2$ & val $R^2$ & test $R^2$ & gap \\
+\midrule
+soft/general shelf life & ridge\_regression & 0.927 & 0.924 & \textbf{0.910} & 0.017 \\
+ & shallow\_decision\_tree & 0.921 & 0.910 & \textbf{0.926} & -0.005 \\
+ & shallow\_random\_forest & 0.953 & 0.934 & \textbf{0.934} & 0.019 \\
+ & small\_mlp & 0.984 & 0.979 & \textbf{0.972} & 0.012 \\
+\addlinespace[2pt]
+semi-hard/general shelf life & ridge\_regression & 0.902 & 0.887 & \textbf{0.866} & 0.035 \\
+ & shallow\_decision\_tree & 0.902 & 0.886 & \textbf{0.816} & 0.086 \\
+ & shallow\_random\_forest & 0.931 & 0.904 & \textbf{0.864} & 0.067 \\
+ & small\_mlp & 0.961 & 0.928 & \textbf{0.933} & 0.028 \\
+\addlinespace[2pt]
+hard/general shelf life & ridge\_regression & 0.916 & 0.899 & \textbf{0.929} & -0.013 \\
+ & shallow\_decision\_tree & 0.888 & 0.807 & \textbf{0.861} & 0.027 \\
+ & shallow\_random\_forest & 0.921 & 0.873 & \textbf{0.900} & 0.021 \\
+ & small\_mlp & 0.951 & 0.920 & \textbf{0.939} & 0.012 \\
+\addlinespace[2pt]
+soft/safety endpoint & ridge\_regression & 0.603 & 0.601 & \textbf{0.572} & 0.032 \\
+ & shallow\_decision\_tree & 0.625 & 0.536 & \textbf{0.541} & 0.084 \\
+ & shallow\_random\_forest & 0.674 & 0.600 & \textbf{0.587} & 0.086 \\
+ & small\_mlp & 0.774 & 0.435 & \textbf{0.483} & 0.291 \\
+\addlinespace[2pt]
+semi-hard/safety endpoint & ridge\_regression & 0.276 & 0.047 & \textbf{0.345} & -0.068 \\
+ & shallow\_decision\_tree & 0.297 & 0.019 & \textbf{0.402} & -0.105 \\
+ & shallow\_random\_forest & 0.368 & 0.106 & \textbf{0.373} & -0.005 \\
+ & small\_mlp & 0.325 & 0.065 & \textbf{0.301} & 0.023 \\
+\addlinespace[2pt]
+hard/safety endpoint & ridge\_regression & 0.040 & -0.062 & \textbf{-0.055} & 0.095 \\
+ & shallow\_decision\_tree & 0.133 & -0.140 & \textbf{-0.224} & 0.357 \\
+ & shallow\_random\_forest & 0.298 & -0.031 & \textbf{-0.079} & 0.377 \\
+ & small\_mlp & 0.031 & -0.032 & \textbf{-0.057} & 0.087 \\
+\addlinespace[2pt]
+\bottomrule
+\end{tabular}

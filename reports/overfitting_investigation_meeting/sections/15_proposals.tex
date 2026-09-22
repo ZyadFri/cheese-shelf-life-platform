@@ -1,0 +1,186 @@
+\chapter{Proposed changes to training and evaluation}
+\label{ch:proposals}
+
+\begin{saybox}[title=What to say at the start of this section]
+Separate what has already been done from what is proposed. Two things have
+been implemented and are running; everything else is a proposal with an
+experiment attached. Do not promise that any proposal will raise $\rsq$ ---
+several of them should be expected to lower it, because they measure
+something harder.
+\end{saybox}
+
+\section{Already implemented}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=2pt]
+\item \textbf{Leave-one-generation-rule-out cross-validation} as the
+  headline generalization metric, across all six specialists and seventeen
+  model configurations (\Cref{ch:loro}).
+\item \textbf{Row-level retention of out-of-fold predictions}, enabling
+  fold-level diagnosis rather than summary-statistic reporting
+  (\Cref{ch:folds}). $102\,000$ predictions with full formulation context
+  are stored in \texttt{rf\_fold\_predictions.csv}.
+\end{enumerate}
+
+\section{Proposed, with the experiment that would test each}
+
+\subsection{A. Leave-one-source-component-out evaluation}
+
+\emph{Problem:} rule identifiers share components, so leave-rule-out is
+still optimistic (\Cref{ch:limits}, limitation 1).
+
+\emph{Change:} parse each \texttt{source\_rule\_id} on the pipe delimiter,
+and for each distinct component withhold \emph{every} rule containing it.
+
+\emph{Experiment:} re-run the existing harness with the modified grouping.
+Implementable from the identifiers alone; no new data required.
+
+\emph{Expected evidence:} scores lower than leave-rule-out. If they are
+much lower, component-level sharing is doing substantial work and the
+current numbers are materially optimistic. If they are similar, the rules
+are more independent than their naming suggests.
+
+\emph{Decision criterion:} adopt whichever protocol is stricter as the
+reported headline; report both.
+
+\subsection{B. Censoring-aware treatment of the safety endpoints}
+
+\emph{Problem:} $100\%$ of hard/safety rows and $94.6\%$ of semi-hard/safety
+rows are right-censored, and the loss function does not know
+(\Cref{sec:censoring}).
+
+\emph{Change:} fit the safety specialists with a censoring-aware objective
+--- Tobit regression, an accelerated failure time model, or a
+gradient-boosting survival objective --- and, separately, report the
+censored and uncensored subpopulations apart.
+
+\emph{Experiment:} first, the cheap diagnostic: refit soft/safety on its
+$1\,331$ uncensored rows only and compare against the current model
+evaluated on those same rows. That isolates the censoring effect without
+any new machinery.
+
+\emph{Expected evidence:} if the uncensored-only model predicts the
+uncensored rows materially better, the mixed objective is costing
+accuracy.
+
+\emph{Decision criterion:} adopt a censoring-aware objective if the
+diagnostic shows a material gap; regardless of outcome, relabel the safety
+output to state what it predicts.
+
+\subsection{C. Targeted coverage of under-represented mechanisms}
+
+\emph{Problem:} the clostridia mechanism is carried by one rule in
+hard/general, and its removal costs the specialist $0.35$ $\rsq$ points
+(\Cref{sec:fold-clostridia}).
+
+\emph{Change:} the named gaps, from the fold analysis, are specific:
+\begin{itemize}[leftmargin=1.2em, itemsep=1pt]
+\item \textbf{Clostridial late blowing in hard cheese} --- pecorino
+  romano, gruyère, manchego, parmigiano reggiano, cheddar, emmental, with
+  lysozyme, potassium nitrate and protective cultures, $8$--$15^\circ$C,
+  ripening $78$--$843$ days. Currently one substantial rule.
+\item \textbf{Shredded hard cheese} --- cheddar, shredded form, MAP at
+  $30$/$50$/$75\%$ CO\textsubscript{2}. Currently one rule; the form
+  drives a $50$-day shift relative to block cheese.
+\item \textbf{Natamycin on fresh soft cheeses} --- ricotta, fior di latte,
+  fresh mozzarella. Zero training rows for these product--preservative
+  combinations; $169$ natamycin rows exist, all on other products.
+\end{itemize}
+
+\emph{Experiment:} add coverage for one gap at a time and re-run
+leave-rule-out on the affected specialist only.
+
+\emph{Expected evidence:} the held-out fold for the reinforced mechanism
+improves; others do not change.
+
+\emph{Caution:} this must not be done by generating more rows from the
+same rule. That increases $n$ without increasing $G$, which
+\Cref{ch:synthetic} showed does not help. New coverage means new
+mechanisms from new sources.
+
+\subsection{D. Group-aware nested hyperparameter selection}
+
+\emph{Problem:} early stopping currently selects the boosting round count
+using a validation partition drawn from the test rules
+(\Cref{sec:hparam}).
+
+\emph{Change:} nest an inner leave-rule-out loop within each outer fold's
+training rules for selecting $M$ and other hyperparameters.
+
+\emph{Experiment:} run nested selection on one specialist and compare the
+outer-fold scores against the current fixed-hyperparameter results.
+
+\emph{Expected evidence:} a small change. If it is large, the current
+numbers carry a selection dependency worth removing everywhere.
+
+\subsection{E. Reporting standard}
+
+\emph{Problem:} no single summary statistic represents these results
+honestly (\Cref{ch:folds}).
+
+\emph{Change:} report, for every specialist and model, the full set:
+pooled out-of-fold $\rsq$; mean and median fold $\rsq$; worst fold with its
+rule named; MAE and RMSE in days; and the number of folds and rows.
+
+\emph{Decision criterion:} no headline figure is published without its
+worst-fold companion. The clostridia result should be visible in any
+summary of hard/general, not averaged away.
+
+\subsection{F. An external test set that is actually in support}
+
+\emph{Problem:} all $21$ external cases are flagged
+\texttt{unsupported\_categorical} (\Cref{ch:external}).
+
+\emph{Change:} assemble real cases that fall inside the categorical support
+of the trained specialists, and verify their source publications against
+the generation rules' sources.
+
+\emph{Blocker:} the second half requires the generator's source-to-rule
+mapping, which is not in this repository. This is the highest-value piece
+of missing evidence in the audit.
+
+\subsection{G. A mechanistic or hierarchical baseline}
+
+\emph{Problem:} all three production ensembles share the extrapolation
+bound of \cref{eq:rf-bound} and therefore fail together on out-of-range
+targets. No evaluated model can extrapolate at all.
+
+\emph{Change:} add a parametric baseline --- a predictive-microbiology
+growth model, or a hierarchical model with category-level effects --- that
+can extrapolate beyond the training target range.
+
+\emph{Experiment:} evaluate it on the same $56$ folds, with particular
+attention to the clostridia fold where every current model fails.
+
+\emph{Expected evidence:} if a parametric model handles the clostridia fold
+where tree ensembles cannot, the failure is attributable to the
+extrapolation bound rather than to missing information --- which is
+currently an open question (\Cref{ch:crossmodel}).
+
+\section{Prioritised plan}
+
+\begin{table}[htbp]\centering\small
+\caption{Proposed work in priority order. ``Cost'' is implementation
+effort given what already exists in the repository.}
+\label{tab:plan}
+\begin{tabular}{p{0.4cm}p{3.5cm}p{4.3cm}p{2.3cm}p{1.6cm}}
+\toprule
+\# & Change & Evidence that motivates it & Blocker & Cost \\
+\midrule
+1 & Censoring diagnostic (B) & $100\%$ of hard/safety rows censored & none & low \\
+2 & Reporting standard (E) & mean/median/pooled disagree by up to $0.7$ & none & low \\
+3 & Leave-component-out (A) & rule IDs share components & none & low \\
+4 & Coverage for named gaps (C) & clostridia fold: $\rsq = -3.86$ & new sources & high \\
+5 & Nested selection (D) & early stopping sees test rules & none & medium \\
+6 & In-support external set (F) & $21/21$ flagged unsupported & generator mapping & high \\
+7 & Mechanistic baseline (G) & all models bounded by \cref{eq:rf-bound} & none & medium \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{limitbox}[title=No performance promises]
+None of these changes is expected to raise the reported $\rsq$. Items A,
+B and D should be expected to \emph{lower} it, because each removes a
+dependency that currently makes the evaluation easier than the deployment
+task. That is the intended direction of travel: the objective is a number
+that can be defended, not a number that is high.
+\end{limitbox}

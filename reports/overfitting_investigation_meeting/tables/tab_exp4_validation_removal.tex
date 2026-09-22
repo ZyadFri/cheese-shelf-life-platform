@@ -1,0 +1,32 @@
+\begin{tabular}{llrrr}
+\toprule
+Specialist & Model & test $R^2$ (70/15/15) & test $R^2$ (85/15) & $\Delta$ \\
+\midrule
+hard/general\_shelf\_life & ridge\_regression & 0.929 & 0.930 & 0.0011 \\
+hard/general\_shelf\_life & shallow\_decision\_tree & 0.861 & 0.875 & 0.0148 \\
+hard/general\_shelf\_life & shallow\_random\_forest & 0.900 & 0.903 & 0.0032 \\
+hard/general\_shelf\_life & small\_mlp & 0.939 & 0.939 & 0.0002 \\
+hard/safety\_endpoint & ridge\_regression & -0.055 & -0.048 & 0.0066 \\
+hard/safety\_endpoint & shallow\_decision\_tree & -0.224 & -0.212 & 0.0126 \\
+hard/safety\_endpoint & shallow\_random\_forest & -0.079 & -0.068 & 0.0108 \\
+hard/safety\_endpoint & small\_mlp & -0.057 & -0.037 & 0.0199 \\
+semi\_hard/general\_shelf\_life & ridge\_regression & 0.866 & 0.868 & 0.0015 \\
+semi\_hard/general\_shelf\_life & shallow\_decision\_tree & 0.816 & 0.822 & 0.0056 \\
+semi\_hard/general\_shelf\_life & shallow\_random\_forest & 0.864 & 0.864 & 0.0001 \\
+semi\_hard/general\_shelf\_life & small\_mlp & 0.933 & 0.934 & 0.0016 \\
+semi\_hard/safety\_endpoint & ridge\_regression & 0.345 & 0.367 & 0.0222 \\
+semi\_hard/safety\_endpoint & shallow\_decision\_tree & 0.402 & 0.308 & -0.0937 \\
+semi\_hard/safety\_endpoint & shallow\_random\_forest & 0.373 & 0.362 & -0.0117 \\
+semi\_hard/safety\_endpoint & small\_mlp & 0.301 & 0.263 & -0.0386 \\
+soft/general\_shelf\_life & ridge\_regression & 0.910 & 0.911 & 0.0014 \\
+soft/general\_shelf\_life & shallow\_decision\_tree & 0.926 & 0.924 & -0.0019 \\
+soft/general\_shelf\_life & shallow\_random\_forest & 0.934 & 0.941 & 0.0067 \\
+soft/general\_shelf\_life & small\_mlp & 0.972 & 0.972 & 0.0007 \\
+soft/safety\_endpoint & ridge\_regression & 0.572 & 0.565 & -0.0065 \\
+soft/safety\_endpoint & shallow\_decision\_tree & 0.541 & 0.552 & 0.0106 \\
+soft/safety\_endpoint & shallow\_random\_forest & 0.587 & 0.594 & 0.0066 \\
+soft/safety\_endpoint & small\_mlp & 0.483 & 0.454 & -0.0284 \\
+\midrule
+\multicolumn{4}{r}{mean change} & -0.0023 \\
+\bottomrule
+\end{tabular}

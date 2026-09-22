@@ -1,0 +1,7 @@
+category,task,n_total,n_train,n_val,n_test,n_rules_total,n_rules_train,n_rules_val,n_rules_test,n_rules_shared_train_test,pct_test_rules_seen_in_train,n_test_rows_from_seen_rule,pct_test_rows_from_seen_rule,n_contexts_shared_train_test,n_contexts_total,rows_per_context_mean,contexts_per_rule_mean
+soft,general_shelf_life,8800,6160,1320,1320,7,7,7,7,7,100.0,1320,100.0,0,2200,4.0,314.2857142857143
+soft,safety_endpoint,4800,3360,720,720,11,11,11,11,11,100.0,720,100.0,0,1200,4.0,109.0909090909091
+semi_hard,general_shelf_life,7200,5040,1080,1080,12,12,12,12,12,100.0,1080,100.0,0,1800,4.0,150.0
+semi_hard,safety_endpoint,4000,2800,600,600,8,8,8,8,8,100.0,600,100.0,0,1000,4.0,125.0
+hard,general_shelf_life,6000,4200,900,900,8,8,8,6,6,100.0,900,100.0,0,1500,4.0,187.5
+hard,safety_endpoint,3200,2240,480,480,10,10,10,10,10,100.0,480,100.0,0,800,4.0,80.0

@@ -1,0 +1,164 @@
+\chapter{The original evaluation, reproduced from source}
+\label{ch:original}
+
+\begin{saybox}[title=What to say at the start of this section]
+State that the original protocol was not merely read but re-executed, with
+the production seed, so the numbers discussed are the actual production
+numbers rather than a description of them. Then present the protocol's
+design intent honestly: it was written to prevent a specific, real form of
+leakage, and it succeeds at that.
+\end{saybox}
+
+\section{The splitting procedure as implemented}
+
+The production split is performed by \texttt{make\_context\_splits()} in
+\evd{model\_service.py}, called from the training driver with the global
+seed. Its logic, read from source:
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=2pt]
+\item Compute, for each \texttt{context\_id}, whether that context contains
+  any row with \texttt{data\_origin == "real\_paper\_derived"}.
+\item Partition the context identifiers into two strata by that boolean.
+\item Within each stratum, shuffle the context identifiers with
+  \texttt{numpy.random.default\_rng(42)} and allocate them $70/15/15$ to
+  train, validation and test according to
+  \texttt{SPLIT\_FRACTIONS = \{train: 0.70, validation: 0.15, test: 0.15\}}.
+\item Return the three row subsets selected by context membership.
+\end{enumerate}
+
+The design intent is explicit in the function's own docstring: it is a
+``leakage-safe split'' that groups by context ``so a context is never split
+across train/val/test,'' stratified so that a small real-data subset would
+be represented in every partition rather than left to chance.
+
+\begin{findingbox}[title=The protocol does what it claims --- and that is the point]
+Re-executing the production splitter with the production seed and checking
+context membership directly confirms \textbf{zero context overlap between
+train and test in all six specialists}. The protocol is not broken. It
+correctly enforces the constraint it was designed to enforce. The
+investigation's finding is not that the code is wrong, but that the
+constraint it enforces is not the constraint this dataset requires.
+\end{findingbox}
+
+\subsection{An observation about the stratification}
+
+The stratification variable is \texttt{data\_origin ==
+"real\_paper\_derived"}. In the V7 corpus, every row has
+\texttt{data\_origin == "synthetic\_literature\_constrained\_v7"}. The
+predicate is therefore uniformly false, one stratum is empty, and the
+stratification is a no-op on this data.
+
+This is not an error --- it is a piece of machinery written when real rows
+were expected to be present, and it would function if they were. It is
+worth mentioning to the panel because it is independent corroboration of
+\Cref{sec:limit-evidence}: the pipeline was built anticipating real
+observations that the corpus does not currently contain.
+
+\section{The original numerical results}
+
+\Cref{tab:tab_production_v7} gives the complete production results for the
+V7 dataset: all six specialists $\times$ four model families, with the
+training, validation and test $\rsq$ and the test RMSE, recovered from the
+stored \texttt{metrics.json} and \texttt{training\_manifest.json} artefacts
+rather than from any summary document. \Cref{tab:tab_production_v6} gives
+the corresponding V6 results.
+
+\tbl{tab_production_v7}{Original production results, V7 dataset,
+context-holdout protocol. Recovered from
+\texttt{artifacts\_v7/\{category\}/\{task\}/metrics.json}.}
+
+\fig{fig01_production_v7_test_r2}{0.95}{%
+  Original context-holdout test $\rsq$ for the twenty-four production fits.
+  The three general-shelf-life specialists produce the scores that prompted
+  this investigation; the safety-endpoint specialists behave very
+  differently and are discussed in \Cref{sec:safety-anomaly}.}
+
+\subsection{Reading the table honestly}
+
+Three distinct patterns are present, and conflating them would be a
+mistake.
+
+\paragraph{The general-shelf-life specialists score very high.}
+Soft/general reaches test $\rsq = 0.971$ (LightGBM), hard/general $0.932$,
+semi-hard/general $0.927$. These are the numbers that prompted the concern.
+
+\paragraph{The safety-endpoint specialists do not.}
+\label{sec:safety-anomaly}
+On V7, soft/safety reaches only $0.594$, semi-hard/safety $0.342$, and
+hard/safety is \emph{negative} at $-0.097$ for Random Forest and
+$-0.528$ for EBM. A negative $\rsq$ means the model predicts worse than
+the test-set mean. Any explanation of the high scores must also be
+consistent with these low ones, which rules out ``the models memorise
+everything'' as a general account.
+
+\paragraph{The V6\,$\rightarrow$\,V7 transition moved the two tasks in
+opposite directions.} Comparing \Cref{tab:tab_production_v6} with
+\Cref{tab:tab_production_v7}: soft/general improved from $0.936$ to
+$0.971$, while soft/safety \emph{fell} from $0.917$ to $0.573$ and
+hard/safety fell from $0.786$ to $-0.024$ (LightGBM in each case).
+
+\fig{fig02_v6_vs_v7_lightgbm}{0.95}{%
+  The same model and the same protocol on two dataset versions. The
+  divergence between quality and safety endpoints under V7 is a property
+  of the data, not of the learner.}
+
+\tbl{tab_production_v6}{Original production results, V6 dataset, same
+protocol. Retained for comparison; not overwritten by the V7 run.}
+
+\subsection{Optimism gap}
+
+\Cref{fig:fig03_train_test_gap_v7} plots the difference between training
+and test $\rsq$ for every V7 production fit. Random Forest and XGBoost
+train to $\rsq > 0.99$ almost everywhere, which is expected for
+unpruned bagged trees and deep boosted trees --- a training $\rsq$ near
+unity is a statement about capacity, not about generalization. The
+informative quantity is the gap, and the gap is small precisely where the
+test score is high.
+
+\fig{fig03_train_test_gap_v7}{0.95}{%
+  Train-minus-test $\rsq$ for the V7 production fits. The large gaps sit
+  on the safety-endpoint specialists, where the test scores are low; the
+  quality specialists show small gaps and high test scores.}
+
+\section{Four things a high $\rsq$ could mean}
+
+The single most important conceptual point of the meeting is that these
+four explanations are distinct, and the original result is consistent with
+only some of them. They must not be used interchangeably.
+
+\begin{description}[leftmargin=1.6em, style=nextline, font=\bfseries\color{dgreen}]
+\item[1. Classical overfitting] The model has memorised individual
+  training rows, including their noise, and performs well on training data
+  and poorly on any held-out data. \emph{This is refuted by the original
+  results themselves}: held-out test scores are high, not low. Whatever is
+  happening, it is not the textbook train-high/test-low failure.
+
+\item[2. Data leakage] A feature carries information about the target that
+  would not be available at prediction time --- an identifier, a downstream
+  measurement, an encoded target. \emph{Directly checked}: the exclusion
+  list removes identifiers and provenance, including
+  \texttt{source\_rule\_id} itself, and \Cref{sec:leakage} audits the
+  remaining features individually. No target-derived feature was found in
+  the model inputs.
+
+\item[3. Optimistic evaluation from shared generative structure] The test
+  set is statistically independent at the level the protocol controls
+  (contexts) but not at the level that governs the mapping being learned
+  (generation rules). The model is scored on new samples of relationships
+  it was trained on. \emph{This is what the evidence supports}, and
+  \Cref{ch:discovery} quantifies it.
+
+\item[4. Genuine generalization to independent observations] The model
+  would predict well on new experimental data. \emph{Not established by
+  any internal metric}, and \Cref{ch:external} shows the external evidence
+  points the other way.
+\end{description}
+
+\begin{findingbox}[title=The precise claim]
+The original $\rsq \approx 0.92$--$0.97$ figures are best described as
+\textbf{valid measurements of the wrong quantity}. They accurately measure
+how well the model interpolates within known generation mechanisms. They
+were reported, and read, as if they measured generalization to new
+formulations. The fault is in the inference drawn from the protocol, not
+in the arithmetic of the metric.
+\end{findingbox}

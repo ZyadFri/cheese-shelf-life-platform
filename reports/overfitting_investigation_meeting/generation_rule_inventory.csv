@@ -1,0 +1,57 @@
+category,task,rule,n_rows,n_contexts,n_products,products,n_ingredients,ingredients,temp_min,temp_max,y_min,y_max,y_mean,y_std,n_indicators
+soft,general_shelf_life,V7|HMMC_NAT|NATAMYCIN_REVIEW,17,17,2,fior di latte; fresh mozzarella,1,natamycin,2.0,8.0,5.17,11.41,8.091764705882353,1.8297002325999936,1
+soft,general_shelf_life,V7|NATAMYCIN_REVIEW,152,152,16,brie; burrata; camembert; cottage cheese ...,1,natamycin,2.0,12.0,2.76,137.0,31.38934210526316,28.722474382678904,1
+soft,general_shelf_life,V7|PH_CHEESE,5654,2091,18,brie; burrata; camembert; cottage cheese ...,9,acetic acid; calcium propionate; chitosan ...,2.0,12.0,1.5,156.51,24.41795719844358,25.399773502661247,10
+soft,general_shelf_life,V7|PLANT_REVIEW,2541,1604,18,brie; burrata; camembert; cottage cheese ...,6,clove essential oil; grape seed extract; green tea extract ...,2.0,12.0,1.82,145.7,27.57720188902007,28.377714043468103,9
+soft,general_shelf_life,V7|RICOTTA_MAP,283,109,1,ricotta,9,acetic acid; calcium propionate; chitosan ...,2.0,12.0,3.06,11.97,6.3459363957597175,1.979938414092653,10
+soft,general_shelf_life,V7|RICOTTA_MAP|NATAMYCIN_REVIEW,8,8,1,ricotta,1,natamycin,2.0,4.0,7.33,10.93,9.4575,1.0894526804121154,1
+soft,general_shelf_life,V7|RICOTTA_MAP|PLANT_REVIEW,145,88,1,ricotta,6,clove essential oil; grape seed extract; green tea extract ...,2.0,12.0,3.52,13.69,7.207379310344827,2.179380333913001,9
+semi_hard,general_shelf_life,V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW,620,155,9,colby; edam; gouda; halloumi ...,4,lysozyme; none; potassium nitrate ...,8.0,15.0,64.65,260.0,185.6031129032258,54.31921970378388,1
+semi_hard,general_shelf_life,V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|LMM_MAP,64,16,1,low-moisture mozzarella,4,lysozyme; none; potassium nitrate ...,8.0,15.0,72.18,260.0,149.87656249999998,52.604468402717835,1
+semi_hard,general_shelf_life,V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|SALOIO_COATING,76,19,1,saloio cheese,4,lysozyme; none; potassium nitrate ...,8.0,15.0,86.02,260.0,187.33302631578945,48.15732467706892,1
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW,3013,1302,9,colby; edam; gouda; halloumi ...,9,acetic acid; calcium propionate; chitosan ...,2.0,12.0,18.6,195.64,60.120056422170585,24.30083919308515,9
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW|LMM_MAP,333,143,1,low-moisture mozzarella,9,acetic acid; calcium propionate; chitosan ...,2.0,12.0,21.23,93.55,55.1651951951952,16.421152747819068,9
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW|LMM_MAP|NATAMYCIN_REVIEW,12,12,1,low-moisture mozzarella,1,natamycin,2.0,10.0,37.0,79.12,54.60333333333333,12.969695681110105,2
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW|LMM_MAP|PLANT_REVIEW,227,112,1,low-moisture mozzarella,6,clove essential oil; grape seed extract; green tea extract ...,2.0,12.0,24.79,113.33,60.91704845814978,18.678599003107283,8
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW|NATAMYCIN_REVIEW,157,157,9,colby; edam; gouda; halloumi ...,1,natamycin,2.0,12.0,26.3,166.25,66.85885350318472,29.18640340207944,2
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW|PLANT_REVIEW,2038,1024,9,colby; edam; gouda; halloumi ...,6,clove essential oil; grape seed extract; green tea extract ...,2.0,12.0,22.01,209.85,66.98877330716388,27.685520334589878,8
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW|SALOIO_COATING,346,165,1,saloio cheese,9,acetic acid; calcium propionate; chitosan ...,2.0,12.0,16.8,49.86,29.83089595375723,6.259040492806568,9
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW|SALOIO_COATING|NATAMYCIN_REVIEW,22,22,1,saloio cheese,1,natamycin,2.0,12.0,23.36,47.76,34.41590909090909,7.637639038772393,2
+semi_hard,general_shelf_life,V7|HARD_SEMI_REVIEW|SALOIO_COATING|PLANT_REVIEW,292,136,1,saloio cheese,6,clove essential oil; grape seed extract; green tea extract ...,2.0,12.0,18.65,52.15,34.00804794520548,7.520720743804042,8
+hard,general_shelf_life,V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW,620,155,6,cheddar; emmental; gruyère; manchego ...,4,lysozyme; none; potassium nitrate ...,8.0,15.0,69.5,240.0,189.03080645161288,37.73921255741293,1
+hard,general_shelf_life,V7|CLOSTRIDIA|CLOSTRIDIA_GRANA|HARD_SEMI_REVIEW|SHRED_NAT,32,8,1,cheddar,4,lysozyme; none; potassium nitrate ...,8.0,15.0,115.81,220.0,184.3103125,33.1174204703336,1
+hard,general_shelf_life,V7|HARD_SEMI_REVIEW,2741,1277,6,cheddar; emmental; gruyère; manchego ...,9,acetic acid; calcium propionate; chitosan ...,2.0,12.0,23.61,155.87,74.62669463699379,23.46918409142728,7
+hard,general_shelf_life,V7|HARD_SEMI_REVIEW|NATAMYCIN_REVIEW,170,170,6,cheddar; emmental; gruyère; manchego ...,1,natamycin,2.0,12.0,31.29,137.71,79.74,24.045017616740253,2
+hard,general_shelf_life,V7|HARD_SEMI_REVIEW|PLANT_REVIEW,2197,1020,6,cheddar; emmental; gruyère; manchego ...,6,clove essential oil; grape seed extract; green tea extract ...,2.0,12.0,29.09,177.67,82.01142922166592,25.745279892714496,6
+hard,general_shelf_life,V7|HARD_SEMI_REVIEW|SHRED_NAT,135,60,1,cheddar,9,acetic acid; calcium propionate; chitosan ...,2.0,12.0,17.29,61.88,38.385851851851854,8.311624693916059,7
+hard,general_shelf_life,V7|HARD_SEMI_REVIEW|SHRED_NAT|NATAMYCIN_REVIEW,8,8,1,cheddar,1,natamycin,4.0,12.0,31.7,64.75,50.224999999999994,9.38005787371729,2
+hard,general_shelf_life,V7|HARD_SEMI_REVIEW|SHRED_NAT|PLANT_REVIEW,97,45,1,cheddar,6,clove essential oil; grape seed extract; green tea extract ...,2.0,12.0,23.18,62.99,42.536391752577316,7.593958561685594,6
+soft,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM,1579,484,16,brie; burrata; camembert; cottage cheese ...,7,caprylic acid; chitosan; lactic acid ...,4.0,12.0,2.52,60.0,27.24291323622546,17.063150253613337,1
+soft,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM|FETA_OREGANO,112,28,1,feta,9,caprylic acid; chitosan; lactic acid ...,4.0,12.0,14.49,58.57,34.81071428571429,13.759192813264406,1
+soft,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW,357,314,16,brie; burrata; camembert; cottage cheese ...,2,oregano essential oil; thyme essential oil,4.0,12.0,3.15,60.0,27.285798319327732,16.647009727217892,1
+soft,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM|QF_MARKET,96,24,1,queso fresco,9,caprylic acid; chitosan; lactic acid ...,4.0,12.0,3.71,25.57,10.504375000000001,4.778774520842413,1
+soft,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM|RICOTTA_NISIN,116,29,1,ricotta,9,caprylic acid; chitosan; lactic acid ...,4.0,12.0,2.85,38.05,10.437068965517238,6.45054645709977,1
+soft,safety_endpoint,V7|FETA_OREGANO|RISK_REVIEW|PH_CHEESE,58,21,1,feta,5,acetic acid; caprylic acid; chitosan ...,4.0,12.0,21.23,59.65,41.10293103448275,11.204498941116292,1
+soft,safety_endpoint,V7|FETA_OREGANO|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW,26,17,1,feta,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,12.0,21.23,59.65,39.77192307692307,12.565489252466302,1
+soft,safety_endpoint,V7|RISK_REVIEW|PH_CHEESE,1120,401,19,brie; burrata; camembert; cottage cheese ...,5,acetic acid; caprylic acid; chitosan ...,4.0,12.0,3.37,59.9,36.4306875,14.082460731059944,2
+soft,safety_endpoint,V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW,484,341,19,brie; burrata; camembert; cottage cheese ...,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,12.0,4.12,59.9,37.440847107438024,14.005427338467657,2
+soft,safety_endpoint,V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE,539,213,19,brie; burrata; camembert; cottage cheese ...,4,lactic acid; nisin; none ...,4.0,12.0,5.56,59.93,36.45679035250463,13.820859157717122,1
+soft,safety_endpoint,V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW,313,205,19,brie; burrata; camembert; cottage cheese ...,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,12.0,7.38,59.93,36.58115015974441,13.567158450334482,1
+semi_hard,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM,1297,407,11,colby; edam; gouda; halloumi ...,7,caprylic acid; chitosan; lactic acid ...,4.0,15.0,2.82,89.99,56.762606013878184,21.02415722888632,1
+semi_hard,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW,331,286,11,colby; edam; gouda; halloumi ...,2,oregano essential oil; thyme essential oil,4.0,15.0,4.36,89.68,55.58664652567976,20.84853304756196,1
+semi_hard,safety_endpoint,V7|KASHAR_EO|RISK_REVIEW|PH_CHEESE,54,19,1,kashar,5,acetic acid; caprylic acid; chitosan ...,4.0,15.0,38.76,89.08,62.12611111111111,17.02298484088739,1
+semi_hard,safety_endpoint,V7|KASHAR_EO|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW,22,16,1,kashar,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,15.0,38.76,87.47,65.07227272727272,16.349333445512514,1
+semi_hard,safety_endpoint,V7|RISK_REVIEW|PH_CHEESE,1046,382,11,colby; edam; gouda; halloumi ...,5,acetic acid; caprylic acid; chitosan ...,4.0,15.0,30.0,95.86,60.08602294455067,17.531475269492635,2
+semi_hard,safety_endpoint,V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW,482,340,11,colby; edam; gouda; halloumi ...,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,15.0,30.0,95.86,61.42939834024896,16.942236787719047,2
+semi_hard,safety_endpoint,V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE,498,192,11,colby; edam; gouda; halloumi ...,4,lactic acid; nisin; none ...,4.0,15.0,3.76,99.14,61.19977911646587,21.401311129455696,1
+semi_hard,safety_endpoint,V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW,270,180,11,colby; edam; gouda; halloumi ...,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,15.0,5.06,99.14,60.72659259259261,20.664186344212695,1
+hard,safety_endpoint,V7|CHEDDAR_ECOLI|RISK_REVIEW|PH_CHEESE,80,28,1,cheddar,5,acetic acid; caprylic acid; chitosan ...,4.0,15.0,45.2,119.97,82.94475,20.94193400659807,1
+hard,safety_endpoint,V7|CHEDDAR_ECOLI|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW,32,24,1,cheddar,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,15.0,45.2,119.97,86.190625,18.952045414762644,1
+hard,safety_endpoint,V7|CHEDDAR_SALMONELLA|RISK_REVIEW|PH_CHEESE,102,37,1,cheddar,5,acetic acid; caprylic acid; chitosan ...,4.0,15.0,45.57,119.92,89.26392156862741,21.392420798903334,1
+hard,safety_endpoint,V7|CHEDDAR_SALMONELLA|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW,46,29,1,cheddar,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,15.0,52.05,119.92,88.72173913043478,20.772758796542256,1
+hard,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM,957,296,6,cheddar; emmental; gruyère; manchego ...,7,caprylic acid; chitosan; lactic acid ...,4.0,15.0,45.11,119.95,82.30694879832811,20.94177701061776,1
+hard,safety_endpoint,V7|FDA_LM|LM_CHALLENGE|MARKET_LM|PLANT_REVIEW,227,190,6,cheddar; emmental; gruyère; manchego ...,2,oregano essential oil; thyme essential oil,4.0,15.0,45.11,119.95,83.22541850220266,21.926600791728596,1
+hard,safety_endpoint,V7|RISK_REVIEW|PH_CHEESE,890,324,5,emmental; gruyère; manchego; parmigiano reggiano ...,5,acetic acid; caprylic acid; chitosan ...,4.0,15.0,45.23,119.9,81.66431460674156,20.219668125701514,2
+hard,safety_endpoint,V7|RISK_REVIEW|PH_CHEESE|PLANT_REVIEW,406,282,5,emmental; gruyère; manchego; parmigiano reggiano ...,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,15.0,45.26,119.9,81.67349753694582,20.16780339823528,2
+hard,safety_endpoint,V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE,300,115,6,cheddar; emmental; gruyère; manchego ...,4,lactic acid; nisin; none ...,4.0,15.0,46.31,118.75,83.0203,22.118114934842506,1
+hard,safety_endpoint,V7|S_AUREUS|S_AUREUS_REVIEW|PH_CHEESE|PLANT_REVIEW,160,108,6,cheddar; emmental; gruyère; manchego ...,3,clove essential oil; oregano essential oil; thyme essential oil,4.0,15.0,46.31,117.58,82.19818749999999,21.7290100227414,1

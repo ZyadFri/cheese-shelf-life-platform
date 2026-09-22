@@ -1,0 +1,13 @@
+\begin{tabular}{p{4.6cm}rp{7.4cm}}
+\toprule
+Dataset file & rows & \texttt{data\_origin} values present \\
+\midrule
+{\scriptsize \texttt{CHEESE\_SHELF\_LIFE\_REVISED}} & 30,500 & {\scriptsize synthetic\_literature\_constrained (20{,}000); synthetic\_cheese\_database\_anchored (10{,}500)} \\
+{\scriptsize \texttt{CHEESE\_SHELF\_LIFE\_CORRECTED\_GENERALIZED}} & 41,285 & {\scriptsize synthetic\_literature\_constrained (20{,}000); synthetic\_literature\_recalibrated (10{,}785); synthetic\_cheese\_database\_anchored (10{,}500)} \\
+{\scriptsize \texttt{CHEESE\_SHELF\_LIFE\_RECALIBRATED\_V3}} & 48,240 & {\scriptsize synthetic\_literature\_recalibrated\_v3 (31{,}800); retained\_soft\_rebalanced\_v3 (16{,}440)} \\
+{\scriptsize \texttt{CHEESE\_SHELF\_LIFE\_TARGETED\_V4}} & 35,650 & {\scriptsize synthetic\_literature\_constrained (16{,}185); synthetic\_cheese\_database\_anchored (9{,}865); synthetic\_independent\_literature\_calibrated\_v4 (5{,}150); synthetic\_recalibrated\_v4 (4{,}450)} \\
+{\scriptsize \texttt{V7 specialists (soft + semi-hard + hard)}} & 34,000 & {\scriptsize synthetic\_literature\_constrained\_v7 (34{,}000)} \\
+\midrule
+\multicolumn{3}{l}{\scriptsize Verified by loading each file and value-counting \texttt{data\_origin}; no non-synthetic tag appears anywhere.} \\
+\bottomrule
+\end{tabular}

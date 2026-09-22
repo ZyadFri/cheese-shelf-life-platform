@@ -1,0 +1,75 @@
+\begin{longtable}{p{4.1cm}rrrrrr}
+\toprule
+Held-out rule & $n_{\text{test}}$ & $n_{\text{train}}$ & $R^2$ & MAE (d) & RMSE (d) & bias (d) \\
+\midrule
+\endhead
+\multicolumn{7}{l}{\textbf{soft / general shelf life}} \\[1pt]
+{\scriptsize\ttfamily\raggedright NATAMYCIN\_\allowbreak{}REVIEW\par} & 152 & 8,648 & {0.977} & 2.75 & 4.32 & -2.58 \\
+{\scriptsize\ttfamily\raggedright PLANT\_\allowbreak{}REVIEW\par} & 2,541 & 6,259 & {0.976} & 2.44 & 4.38 & -1.87 \\
+{\scriptsize\ttfamily\raggedright PH\_\allowbreak{}CHEESE\par} & 5,654 & 3,146 & {0.938} & 3.80 & 6.30 & +2.82 \\
+{\scriptsize\ttfamily\raggedright RICOTTA\_\allowbreak{}MAP\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 145 & 8,655 & {0.875} & 0.57 & 0.77 & -0.49 \\
+{\scriptsize\ttfamily\raggedright RICOTTA\_\allowbreak{}MAP\par} & 283 & 8,517 & {0.724} & 0.86 & 1.04 & +0.63 \\
+{\scriptsize\ttfamily\raggedright RICOTTA\_\allowbreak{}MAP\textbar\allowbreak{}NATAMYCIN\_\allowbreak{}REVIEW\par} & 8 & 8,792 & {0.072} & 0.94 & 0.98 & -0.94 \\
+{\scriptsize\ttfamily\raggedright HMMC\_\allowbreak{}NAT\textbar\allowbreak{}NATAMYCIN\_\allowbreak{}REVIEW\par} & 17 & 8,783 & \textbf{-0.335} & 2.00 & 2.05 & -2.00 \\
+\addlinespace[3pt]
+\multicolumn{7}{l}{\textbf{semi-hard / general shelf life}} \\[1pt]
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}LMM\_\allowbreak{}MAP\textbar\allowbreak{}NATAMYCIN\_\allowbreak{}REVIEW\par} & 12 & 7,188 & {0.955} & 2.23 & 2.64 & -1.10 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}NATAMYCIN\_\allowbreak{}REVIEW\par} & 157 & 7,043 & {0.943} & 5.28 & 6.95 & -4.87 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 2,038 & 5,162 & {0.893} & 6.59 & 9.05 & -4.80 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\par} & 3,013 & 4,187 & {0.847} & 7.65 & 9.51 & +5.54 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}LMM\_\allowbreak{}MAP\par} & 333 & 6,867 & {0.805} & 5.70 & 7.24 & +1.06 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}LMM\_\allowbreak{}MAP\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 227 & 6,973 & {0.794} & 6.49 & 8.47 & -3.53 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}SALOIO\_\allowbreak{}COATING\textbar\allowbreak{}NATAMYCIN\_\allowbreak{}REVIEW\par} & 22 & 7,178 & {0.771} & 3.14 & 3.57 & -2.90 \\
+{\scriptsize\ttfamily\raggedright CLOSTRIDIA\textbar\allowbreak{}CLOSTRIDIA\_\allowbreak{}GRANA\textbar\allowbreak{}HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}SALOIO\_\allowbreak{}COATING\par} & 76 & 7,124 & {0.648} & 20.77 & 28.39 & -3.16 \\
+{\scriptsize\ttfamily\raggedright CLOSTRIDIA\textbar\allowbreak{}CLOSTRIDIA\_\allowbreak{}GRANA\textbar\allowbreak{}HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\par} & 620 & 6,580 & {0.612} & 26.89 & 33.81 & -3.95 \\
+{\scriptsize\ttfamily\raggedright CLOSTRIDIA\textbar\allowbreak{}CLOSTRIDIA\_\allowbreak{}GRANA\textbar\allowbreak{}HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}LMM\_\allowbreak{}MAP\par} & 64 & 7,136 & {0.607} & 29.23 & 32.70 & +20.95 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}SALOIO\_\allowbreak{}COATING\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 292 & 6,908 & {0.595} & 3.71 & 4.78 & -2.59 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}SALOIO\_\allowbreak{}COATING\par} & 346 & 6,854 & {0.374} & 4.13 & 4.95 & +3.90 \\
+\addlinespace[3pt]
+\multicolumn{7}{l}{\textbf{hard / general shelf life}} \\[1pt]
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}NATAMYCIN\_\allowbreak{}REVIEW\par} & 170 & 5,830 & {0.906} & 5.52 & 7.36 & -4.07 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 2,197 & 3,803 & {0.802} & 8.76 & 11.46 & -6.44 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\par} & 2,741 & 3,259 & {0.801} & 8.57 & 10.47 & +5.57 \\
+{\scriptsize\ttfamily\raggedright CLOSTRIDIA\textbar\allowbreak{}CLOSTRIDIA\_\allowbreak{}GRANA\textbar\allowbreak{}HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}SHRED\_\allowbreak{}NAT\par} & 32 & 5,968 & {0.734} & 12.67 & 16.81 & +1.18 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}SHRED\_\allowbreak{}NAT\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 97 & 5,903 & {0.526} & 4.13 & 5.20 & -3.26 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}SHRED\_\allowbreak{}NAT\textbar\allowbreak{}NATAMYCIN\_\allowbreak{}REVIEW\par} & 8 & 5,992 & \textbf{-0.306} & 9.48 & 10.03 & -9.48 \\
+{\scriptsize\ttfamily\raggedright HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\textbar\allowbreak{}SHRED\_\allowbreak{}NAT\par} & 135 & 5,865 & \textbf{-0.377} & 7.71 & 9.72 & +6.94 \\
+{\scriptsize\ttfamily\raggedright CLOSTRIDIA\textbar\allowbreak{}CLOSTRIDIA\_\allowbreak{}GRANA\textbar\allowbreak{}HARD\_\allowbreak{}SEMI\_\allowbreak{}REVIEW\par} & 620 & 5,380 & \textbf{-3.860} & 67.38 & 83.13 & -62.24 \\
+\addlinespace[3pt]
+\multicolumn{7}{l}{\textbf{soft / safety endpoint}} \\[1pt]
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 357 & 4,443 & {0.988} & 1.30 & 1.81 & -0.24 \\
+{\scriptsize\ttfamily\raggedright RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 484 & 4,316 & {0.957} & 2.14 & 2.90 & -0.19 \\
+{\scriptsize\ttfamily\raggedright FETA\_\allowbreak{}OREGANO\textbar\allowbreak{}RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 26 & 4,774 & {0.943} & 2.36 & 2.94 & +0.37 \\
+{\scriptsize\ttfamily\raggedright S\_\allowbreak{}AUREUS\textbar\allowbreak{}S\_\allowbreak{}AUREUS\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 313 & 4,487 & {0.926} & 2.65 & 3.68 & +0.03 \\
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\par} & 1,579 & 3,221 & {0.820} & 5.00 & 7.23 & +0.05 \\
+{\scriptsize\ttfamily\raggedright S\_\allowbreak{}AUREUS\textbar\allowbreak{}S\_\allowbreak{}AUREUS\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 539 & 4,261 & {0.812} & 4.61 & 5.99 & -0.02 \\
+{\scriptsize\ttfamily\raggedright RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 1,120 & 3,680 & {0.749} & 5.38 & 7.06 & +0.69 \\
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\textbar\allowbreak{}RICOTTA\_\allowbreak{}NISIN\par} & 116 & 4,684 & {0.607} & 1.82 & 4.03 & -0.81 \\
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\textbar\allowbreak{}QF\_\allowbreak{}MARKET\par} & 96 & 4,704 & {0.546} & 2.41 & 3.20 & +1.53 \\
+{\scriptsize\ttfamily\raggedright FETA\_\allowbreak{}OREGANO\textbar\allowbreak{}RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 58 & 4,742 & {0.429} & 6.37 & 8.39 & -1.94 \\
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\textbar\allowbreak{}FETA\_\allowbreak{}OREGANO\par} & 112 & 4,688 & \textbf{-0.166} & 13.23 & 14.79 & +3.20 \\
+\addlinespace[3pt]
+\multicolumn{7}{l}{\textbf{semi-hard / safety endpoint}} \\[1pt]
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 331 & 3,669 & {0.982} & 2.21 & 2.78 & +0.15 \\
+{\scriptsize\ttfamily\raggedright KASHAR\_\allowbreak{}EO\textbar\allowbreak{}RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 22 & 3,978 & {0.972} & 2.46 & 2.67 & -0.73 \\
+{\scriptsize\ttfamily\raggedright S\_\allowbreak{}AUREUS\textbar\allowbreak{}S\_\allowbreak{}AUREUS\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 270 & 3,730 & {0.946} & 3.68 & 4.77 & -0.12 \\
+{\scriptsize\ttfamily\raggedright RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 482 & 3,518 & {0.944} & 2.97 & 4.00 & -0.56 \\
+{\scriptsize\ttfamily\raggedright S\_\allowbreak{}AUREUS\textbar\allowbreak{}S\_\allowbreak{}AUREUS\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 498 & 3,502 & {0.768} & 7.96 & 10.29 & -0.74 \\
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\par} & 1,297 & 2,703 & {0.676} & 9.46 & 11.97 & -0.46 \\
+{\scriptsize\ttfamily\raggedright RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 1,046 & 2,954 & {0.624} & 8.00 & 10.74 & +0.88 \\
+{\scriptsize\ttfamily\raggedright KASHAR\_\allowbreak{}EO\textbar\allowbreak{}RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 54 & 3,946 & {0.581} & 8.88 & 10.91 & -0.65 \\
+\addlinespace[3pt]
+\multicolumn{7}{l}{\textbf{hard / safety endpoint}} \\[1pt]
+{\scriptsize\ttfamily\raggedright CHEDDAR\_\allowbreak{}ECOLI\textbar\allowbreak{}RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 32 & 3,168 & {0.971} & 2.55 & 3.19 & -0.60 \\
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 227 & 2,973 & {0.957} & 3.49 & 4.55 & -0.27 \\
+{\scriptsize\ttfamily\raggedright RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 406 & 2,794 & {0.946} & 3.58 & 4.69 & +0.10 \\
+{\scriptsize\ttfamily\raggedright S\_\allowbreak{}AUREUS\textbar\allowbreak{}S\_\allowbreak{}AUREUS\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 160 & 3,040 & {0.920} & 4.85 & 6.11 & +0.18 \\
+{\scriptsize\ttfamily\raggedright CHEDDAR\_\allowbreak{}SALMONELLA\textbar\allowbreak{}RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\textbar\allowbreak{}PLANT\_\allowbreak{}REVIEW\par} & 46 & 3,154 & {0.905} & 4.85 & 6.32 & -1.63 \\
+{\scriptsize\ttfamily\raggedright S\_\allowbreak{}AUREUS\textbar\allowbreak{}S\_\allowbreak{}AUREUS\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 300 & 2,900 & {0.674} & 10.08 & 12.61 & -0.63 \\
+{\scriptsize\ttfamily\raggedright RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 890 & 2,310 & {0.624} & 9.39 & 12.39 & -0.03 \\
+{\scriptsize\ttfamily\raggedright CHEDDAR\_\allowbreak{}ECOLI\textbar\allowbreak{}RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 80 & 3,120 & {0.560} & 10.70 & 13.80 & +1.84 \\
+{\scriptsize\ttfamily\raggedright CHEDDAR\_\allowbreak{}SALMONELLA\textbar\allowbreak{}RISK\_\allowbreak{}REVIEW\textbar\allowbreak{}PH\_\allowbreak{}CHEESE\par} & 102 & 3,098 & {0.481} & 11.78 & 15.34 & -4.10 \\
+{\scriptsize\ttfamily\raggedright FDA\_\allowbreak{}LM\textbar\allowbreak{}LM\_\allowbreak{}CHALLENGE\textbar\allowbreak{}MARKET\_\allowbreak{}LM\par} & 957 & 2,243 & {0.394} & 13.03 & 16.30 & +0.58 \\
+\addlinespace[3pt]
+\bottomrule
+\end{longtable}

@@ -1,0 +1,204 @@
+\chapter[Leave-one-generation-rule-out cross-validation]{Leave-one-generation-\\rule-out cross-validation}
+\label{ch:loro}
+
+\begin{saybox}[title=What to say at the start of this section]
+Explain the procedure in plain words before any notation: ``we take away
+one entire generation rule, train on the others, and ask the model to
+predict the rule it has never seen --- then repeat for every rule.'' Then
+state what this does and does not measure, because the panel will ask, and
+volunteering it is better than conceding it.
+\end{saybox}
+
+\section{The procedure}
+
+Let a specialist's rows be $\{(\mathbf{x}_i, y_i, g_i)\}_{i=1}^{n}$, where
+$g_i \in \mathcal{G}$ is the row's \texttt{source\_rule\_id} and
+$|\mathcal{G}| = G$. For each rule $g \in \mathcal{G}$:
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=1pt]
+\item Define the held-out set $\mathcal{T}_g = \{ i : g_i = g \}$ and the
+  training set $\mathcal{R}_g = \{ i : g_i \neq g \}$.
+\item Fit the preprocessing transform on $\mathcal{R}_g$ only.
+\item Fit the model on $\mathcal{R}_g$.
+\item Predict every row in $\mathcal{T}_g$.
+\item Record $\rsq$, MAE and RMSE on $\mathcal{T}_g$.
+\end{enumerate}
+
+With $n_{\text{splits}} = G$, \texttt{GroupKFold} grouped on
+\texttt{source\_rule\_id} yields exactly leave-one-rule-out: each fold's
+test set is precisely one rule. Verified in the implementation
+(\evd{scripts/experiments/leave\_rule\_out\_row\_level.py}): the fold loop
+asserts a single unique rule per test partition, the preprocessor is
+constructed and fitted \emph{inside} the loop on the training rows only,
+and hyperparameters are fixed a priori rather than tuned per fold --- so
+no selection information crosses the boundary.
+
+The complete evaluation comprises $56$ folds per model
+($7+11+12+8+8+10$ rules across the six specialists), executed for Random
+Forest, LightGBM and XGBoost, yielding $168$ fold results and
+$102\,000$ row-level out-of-fold predictions.
+
+\section{What this measures --- stated precisely}
+
+\begin{limitbox}[title=Scope of the claim]
+Leave-rule-out cross-validation measures \textbf{transfer across synthetic
+generation rules}: the ability to predict rows produced by a generative
+mechanism absent from training, using other synthetic mechanisms as the
+training signal.
+
+It does \textbf{not} measure transfer to independent experimental
+observations. A high leave-rule-out $\rsq$ is a necessary condition for
+real-world generalization, not a sufficient one. \Cref{ch:limits}
+enumerates the dependencies that survive this protocol, and
+\Cref{ch:external} presents the separate external evidence.
+\end{limitbox}
+
+\section{The metrics, and why their summaries disagree}
+
+For a held-out set $\mathcal{T}$ with mean $\bar{y}_{\mathcal{T}}$,
+\begin{align}
+\rsq &= 1 - \frac{\sum_{i \in \mathcal{T}} (y_i - \hat{y}_i)^2}
+                  {\sum_{i \in \mathcal{T}} (y_i - \bar{y}_{\mathcal{T}})^2}
+       = 1 - \frac{\text{MSE}}{s_y^2}, \\
+\text{MAE} &= \frac{1}{|\mathcal{T}|}\sum_{i \in \mathcal{T}} |y_i - \hat{y}_i|,
+\qquad
+\text{RMSE} = \sqrt{\frac{1}{|\mathcal{T}|}\sum_{i \in \mathcal{T}} (y_i - \hat{y}_i)^2}.
+\end{align}
+
+MAE and RMSE are in days and are directly interpretable: an MAE of $3$ days
+means the average prediction misses by three days. $\rsq$ is a
+\emph{relative} measure --- it compares the model against predicting the
+held-out set's own mean. This distinction is the source of nearly every
+counter-intuitive number in \Cref{ch:folds}.
+
+\subsection{Four different summaries of the same folds}
+
+\begin{description}[leftmargin=1.6em, style=nextline, font=\bfseries\color{dgreen}]
+\item[Mean fold $\rsq$] $\frac{1}{G}\sum_g \rsq_g$. Weights every rule
+  equally regardless of size, so an $8$-row rule counts as much as a
+  $5\,654$-row rule. A single catastrophic small fold dominates it.
+\item[Median fold $\rsq$] Robust to those outliers; describes the typical
+  rule. Hides the failures entirely, which is its own danger.
+\item[Pooled out-of-fold $\rsq$] Concatenate all out-of-fold predictions,
+  then compute $\rsq$ once against the global mean. Weights by row count
+  and is the closest analogue to the original headline number.
+\item[MAE in days] Independent of any variance denominator and therefore
+  immune to the small-fold pathology.
+\end{description}
+
+All four are reported throughout this document, because reporting only one
+would misrepresent the result in one direction or the other.
+
+\subsection{Why a small fold can produce a large negative $\rsq$}
+
+If the held-out rule's own target variance $s_y^2$ is small, the
+denominator is small, and a modest absolute error produces a large ratio.
+Concretely, from the results in \Cref{ch:folds}: the fold
+\texttt{HMMC\_NAT|NATAMYCIN\_REVIEW} has $n = 17$ rows, a target standard
+deviation of $1.78$ days, a Random Forest MAE of $1.99$ days --- and
+$\rsq = -0.335$. A two-day average error would be excellent in any
+practical sense; it is negative in $\rsq$ terms only because the rule's
+rows all lie within a few days of each other.
+
+\begin{findingbox}[title=Reporting implication]
+A negative fold $\rsq$ on a small, low-variance rule is not evidence of a
+catastrophic practical error, and must not be presented as one. Equally, a
+high median $\rsq$ is not evidence that no fold failed. Both summaries are
+reported together throughout, alongside the error in days.
+\end{findingbox}
+
+\fig{fig22_mae_vs_r2}{0.9}{%
+  Every Random Forest fold, plotted as MAE in days against fold $\rsq$.
+  Marker size is fold row count; colour is the held-out rule's target
+  standard deviation. The folds in the lower-left --- small error in days,
+  poor $\rsq$ --- are the low-variance rules.}
+
+\fig{fig23_r2_variance_decomposition}{0.9}{%
+  The $\rsq$ ratio decomposed for the sixteen weakest folds: the target
+  variance $s_y^2$ that forms the denominator against the mean squared
+  error that forms the numerator. A fold goes negative exactly when the
+  burgundy bar exceeds the green one.}
+
+\section{Headline result across all seventeen models}
+
+\tbl{tab_loro_full_zoo}{All seventeen evaluated configurations under
+leave-one-rule-out cross-validation, averaged over the six specialists.}
+
+\fig{fig13_zoo_leave_rule_out_ranking}{0.92}{%
+  Leave-rule-out ranking. The three production tree ensembles separate
+  clearly from every other family once the generation rule is withheld ---
+  a separation that was invisible under the original protocol.}
+
+\fig{fig14_holdout_vs_loro_slope}{0.82}{%
+  The same models under the two protocols. Nothing about the models
+  changed between the left and right columns; only the evaluation did.}
+
+\begin{findingbox}[title=Effect of the protocol change]
+Under the original protocol the seventeen models were bunched together,
+with a linear model within two points of the production ensembles. Under
+leave-rule-out they separate sharply:
+
+\begin{itemize}[leftmargin=1.2em, itemsep=1pt]
+\item LightGBM: mean $\rsq = 0.627$, median $0.780$
+\item Random Forest: mean $\rsq = 0.582$, median $0.791$
+\item XGBoost: mean $\rsq = 0.550$, median $0.719$
+\item Ridge regression: mean $\rsq = -0.874$, median $-0.798$
+\item $k$-NN ($k=5$): mean $\rsq = -3.412$, median $-1.537$
+\item Dummy mean baseline: mean $\rsq = -15.637$
+\end{itemize}
+
+Ridge regression, which scored $0.910$ on soft/general under the original
+protocol, is worse than useless when the rule is withheld. The capacity of
+the tree ensembles turns out to matter a great deal --- but only under an
+evaluation capable of detecting it.
+\end{findingbox}
+
+\fig{fig15_loro_heatmap_mean}{0.9}{%
+  Leave-rule-out mean $\rsq$ for every model and specialist, clipped at
+  $-2$ for legibility.}
+
+\fig{fig16_loro_heatmap_median}{0.9}{%
+  The same grid using median fold $\rsq$. Comparing with the previous
+  figure isolates the specialists where the mean is distorted by a small
+  number of extreme folds.}
+
+\fig{fig17_mean_vs_median}{0.58}{%
+  Mean against median fold $\rsq$ for every model--specialist combination.
+  Points far below the diagonal indicate a distribution dominated by a few
+  catastrophic folds.}
+
+\section{Per-specialist results for the production ensembles}
+
+\tbl{tab_loro_ensembles_by_specialist}{Leave-rule-out results for the three
+production tree ensembles, broken out by specialist.}
+
+\section{Pooled out-of-fold performance}
+
+Because every row is predicted exactly once when it is held out, the
+out-of-fold predictions can be concatenated and scored as a single set.
+This weights by row count rather than by rule and is the most direct
+counterpart to the original headline figure.
+
+\tbl{tab_pooled_oof}{Pooled out-of-fold metrics: all folds concatenated
+per specialist, then scored once. Computed from the $102\,000$ row-level
+predictions.}
+
+\fig{fig38_pooled_oof_r2}{0.95}{%
+  Pooled out-of-fold $\rsq$ by specialist and model.}
+
+\begin{findingbox}[title=The number to quote]
+For the general-shelf-life task, pooled out-of-fold $\rsq$ under
+leave-rule-out is $0.960$ (soft), $0.940$ (semi-hard) and $0.669$ (hard)
+for LightGBM, against original context-holdout figures of $0.971$, $0.920$
+and $0.932$.
+
+Soft and semi-hard barely move; hard falls by more than twenty-five
+points. That asymmetry is not noise, and \Cref{ch:folds} identifies its
+specific cause --- a single held-out rule representing a spoilage
+mechanism with a completely different time scale.
+\end{findingbox}
+
+\fig{fig37_error_ecdf}{0.78}{%
+  Cumulative distribution of absolute out-of-fold error across all
+  $34\,000$ rows per model. Median absolute error is under four days for
+  all three ensembles; the distributions separate only in the upper tail.}

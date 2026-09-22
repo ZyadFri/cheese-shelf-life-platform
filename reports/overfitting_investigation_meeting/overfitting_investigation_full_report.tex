@@ -1,0 +1,237 @@
+% =====================================================================
+%  Overfitting and Generalization in Cheese Shelf-Life Prediction
+%  A scientific investigation prepared for a technical review meeting.
+%
+%  Every numerical value in this document is produced by the scripts in
+%  scripts/experiments/ from result files stored in this repository. The
+%  tables in tables/ and the figures in figures/ are generated, not typed.
+%
+%  Build:  pdflatex -interaction=nonstopmode overfitting_investigation_full_report.tex  (x3)
+% =====================================================================
+\documentclass[11pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{libertinus}
+\usepackage[scaled=0.86]{beramono}
+\usepackage{microtype}
+\usepackage[htt]{hyphenat}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,longtable,tabularx,array,multirow}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[a4paper,top=2.6cm,bottom=2.5cm,left=2.7cm,right=2.7cm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+\usepackage{caption}
+
+% ---------------------------------------------------------------- palette
+\definecolor{burgundy}{HTML}{7A1B2E}
+\definecolor{burgmid}{HTML}{A84C5B}
+\definecolor{burglight}{HTML}{C9939B}
+\definecolor{palepink}{HTML}{F7EDEF}
+\definecolor{dgreen}{HTML}{1E4D3B}
+\definecolor{dgreenmid}{HTML}{4C7A66}
+\definecolor{palegreen}{HTML}{EDF3F0}
+\definecolor{ink}{HTML}{1F1B1A}
+\definecolor{softgrey}{HTML}{8A8583}
+\definecolor{rulegrey}{HTML}{DDD8D6}
+
+\hypersetup{colorlinks=true, linkcolor=burgundy, citecolor=burgundy,
+            urlcolor=dgreen, linktoc=all}
+
+% ---------------------------------------------------------------- headings
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{burgundy}}
+  {\normalfont\small\sffamily\color{softgrey}\MakeUppercase{Chapter \thechapter}}
+  {6pt}{\Huge}[\vspace{2pt}{\color{burglight}\titlerule[0.8pt]}]
+\titlespacing*{\chapter}{0pt}{-24pt}{28pt}
+
+\titleformat{\section}
+  {\normalfont\large\bfseries\color{burgundy}}{\thesection}{0.7em}{}
+\titleformat{\subsection}
+  {\normalfont\normalsize\bfseries\color{dgreen}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\itshape\color{ink}}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{16pt}{6pt}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+
+\setlength{\headheight}{21.3pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rulegrey}\leaders\hrule height \headrulewidth\hfill}}
+\fancyhead[L]{\footnotesize\color{softgrey}\nouppercase{\leftmark}}
+\fancyhead[R]{\footnotesize\color{softgrey}Overfitting Investigation}
+\fancyfoot[C]{\footnotesize\color{softgrey}\thepage}
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}}
+
+\captionsetup{font=small, labelfont={bf,color=burgundy}, width=0.94\textwidth}
+\setlength{\parskip}{3pt}
+\renewcommand{\arraystretch}{1.12}
+
+% ---------------------------------------------------------------- boxes
+\newtcolorbox{findingbox}[1][]{
+  enhanced, breakable, colback=palepink, colframe=burgundy,
+  colbacktitle=palepink, coltitle=burgundy,
+  boxrule=0pt, leftrule=2.4pt, arc=1pt,
+  left=9pt, right=9pt, top=6pt, bottom=7pt,
+  toptitle=4pt, bottomtitle=1pt, before upper={\setlength{\parskip}{5pt}},
+  fonttitle=\bfseries\small\sffamily, #1}
+
+\newtcolorbox{questionbox}[1][]{
+  enhanced, breakable, colback=palegreen, colframe=dgreen,
+  colbacktitle=palegreen, coltitle=dgreen,
+  boxrule=0pt, leftrule=2.4pt, arc=1pt,
+  left=9pt, right=9pt, top=6pt, bottom=7pt,
+  toptitle=4pt, bottomtitle=1pt, before upper={\setlength{\parskip}{5pt}},
+  fonttitle=\bfseries\small\sffamily, #1}
+
+\newtcolorbox{limitbox}[1][]{
+  enhanced, breakable, colback=white, colframe=softgrey,
+  colbacktitle=white, coltitle=ink,
+  boxrule=0.6pt, arc=1pt,
+  left=9pt, right=9pt, top=6pt, bottom=7pt,
+  toptitle=4pt, bottomtitle=1pt, before upper={\setlength{\parskip}{5pt}},
+  fonttitle=\bfseries\small\sffamily, #1}
+
+\newtcolorbox{saybox}[1][]{
+  enhanced, breakable, colback=white, colframe=burglight,
+  colbacktitle=white, coltitle=burgundy,
+  boxrule=0.8pt, arc=2pt,
+  left=9pt, right=9pt, top=6pt, bottom=7pt,
+  toptitle=4pt, bottomtitle=1pt, before upper={\setlength{\parskip}{5pt}},
+  fonttitle=\bfseries\small\sffamily\itshape, #1}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\evd}[1]{{\footnotesize\color{softgrey}\texttt{#1}}}
+\newcommand{\rsq}{R^2}
+\newcommand{\fig}[3]{%
+  \begin{figure}[htbp]\centering
+  \includegraphics[width=#2\textwidth]{figures/#1}
+  \caption{#3}\label{fig:#1}\end{figure}}
+
+\newcommand{\tbl}[2]{%
+  \begin{table}[htbp]\centering\small
+  \caption{#2}\label{tab:#1}
+  \input{tables/#1}
+  \end{table}}
+
+% longtable fragments cannot sit inside a table environment
+\newcommand{\tbllong}[2]{%
+  \begingroup\small
+  \captionof{table}{#2}\label{tab:#1}%
+  \input{tables/#1}%
+  \endgroup}
+
+\sisetup{detect-all, group-separator={,}}
+
+% =====================================================================
+\begin{document}
+
+% ---------------------------------------------------------------- title
+\begin{titlepage}
+\thispagestyle{empty}
+\vspace*{1.1cm}
+{\color{burglight}\hrule height 2pt}
+\vspace{1.0cm}
+
+{\noindent\footnotesize\sffamily\color{softgrey}\MakeUppercase{Technical investigation report}\par}
+\vspace{0.7cm}
+
+{\noindent\huge\bfseries\color{burgundy} Why Did Our Models Score\\[2pt]
+$\rsq \approx 0.92$--$0.97$?\par}
+\vspace{0.45cm}
+{\noindent\Large\color{ink} A scientific investigation of overfitting and generalization\\[3pt]
+in synthetic-data cheese shelf-life prediction\par}
+
+\vspace{1.0cm}
+{\color{rulegrey}\hrule height 0.6pt}
+\vspace{0.8cm}
+
+\noindent\begin{minipage}{0.62\textwidth}
+\small
+This report documents an investigation prompted by a legitimate
+methodological concern: the internal test scores of the production
+shelf-life models were unusually high, and the evaluation protocol that
+produced them had not been examined at the level of the synthetic
+data-generation structure.
+
+\smallskip
+The investigation reproduces the original training and evaluation
+procedure from source, executes the diagnostic experiments that were
+requested, identifies the specific property of the evaluation design
+responsible for the optimistic scores, and re-evaluates seventeen model
+configurations under a corrected protocol.
+
+\smallskip
+Every number reported here is generated from result files in the project
+repository. Where the repository does not contain the evidence needed to
+answer a question, that is stated explicitly rather than filled in.
+\end{minipage}
+\hfill
+\noindent\begin{minipage}{0.32\textwidth}
+\footnotesize\color{softgrey}
+\textbf{\color{burgundy}Scope}\\
+Six production specialists\\
+Four production model families\\
+Seventeen evaluated configurations\\
+Six diagnostic experiments\\
+Two evaluation protocols
+
+\medskip
+\textbf{\color{burgundy}Dataset}\\
+V7 specialist corpus\\
+34\,000 synthetic rows\\
+7--12 generation rules per specialist
+
+\medskip
+\textbf{\color{burgundy}Prepared for}\\
+Two-hour technical review
+\end{minipage}
+
+\vfill
+{\color{burglight}\hrule height 2pt}
+\vspace{0.4cm}
+{\noindent\footnotesize\color{softgrey}
+Shelf-Life Studio --- cheese shelf-life prediction project \hfill \today}
+\end{titlepage}
+
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+\input{sections/00_summary}
+
+\cleardoublepage
+{\hypersetup{linkcolor=ink}
+\tableofcontents}
+\cleardoublepage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{sections/01_context}
+\input{sections/02_synthetic}
+\input{sections/03_generation_rules}
+\input{sections/04_original_eval}
+\input{sections/05_diagnostics}
+\input{sections/06_discovery}
+\input{sections/07_loro_method}
+\input{sections/08_random_forest}
+\input{sections/09_folds}
+\input{sections/10_lgbm_xgb}
+\input{sections/11_ebm_alternatives}
+\input{sections/12_crossmodel}
+\input{sections/13_limitations}
+\input{sections/14_external}
+\input{sections/15_proposals}
+\input{sections/16_meeting}
+\appendix
+\input{sections/A1_appendix}
+
+\end{document}

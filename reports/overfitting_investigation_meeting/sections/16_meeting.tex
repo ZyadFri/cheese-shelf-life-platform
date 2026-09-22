@@ -1,0 +1,182 @@
+\chapter{Meeting guide and anticipated questions}
+\label{ch:meeting}
+
+\section{Two-hour structure}
+
+\begin{table}[htbp]\centering\small
+\caption{Suggested allocation. Chapters map directly onto sections of the
+discussion.}
+\label{tab:agenda}
+\begin{tabular}{p{6.6cm}p{3.4cm}r}
+\toprule
+Section & Chapters & Minutes \\
+\midrule
+Problem, architecture, and why synthetic data & \ref{ch:context}, \ref{ch:synthetic} & 15 \\
+The generation system and the rule inventory & \ref{ch:rules} & 10 \\
+The original evaluation and its results & \ref{ch:original} & 10 \\
+Diagnostic experiments & \ref{ch:diagnostics} & 15 \\
+The discovery and the revised protocol & \ref{ch:discovery}, \ref{ch:loro} & 15 \\
+Random Forest and the fold-level analysis & \ref{ch:rf}, \ref{ch:folds} & 20 \\
+LightGBM, XGBoost, EBM and alternatives & \ref{ch:lgbm-xgb}, \ref{ch:ebm} & 15 \\
+Cross-model comparison & \ref{ch:crossmodel} & 5 \\
+Limitations, external validation, proposals & \ref{ch:limits}, \ref{ch:external}, \ref{ch:proposals} & 15 \\
+Discussion & --- & 5 \\
+\midrule
+\textbf{Total} & & \textbf{120} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The five numbers to know without looking}
+
+\begin{center}\small
+\begin{tabular}{p{7.4cm}r}
+\toprule
+Quantity & Value \\
+\midrule
+Test rows originating from a training rule, original protocol & $100\%$ \\
+Context overlap between train and test, original protocol & $0$ \\
+LightGBM median fold $\rsq$ under leave-rule-out & $0.780$ \\
+Worst fold: clostridia, hard/general (Random Forest) & $\rsq = -3.86$, bias $-62$ d \\
+External literature evaluation, 21 cases & $\rsq = 0.172$, MAE $39.4$ d \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Anticipated questions}
+
+\begin{questionbox}[title=``Were the original 400 observations enough to train on?'']
+I cannot verify that figure from the repository, and I would rather say so
+than quote it. Every training file in the project's recoverable history is
+$100\%$ synthetically tagged --- there is no real-observation subset in any
+of them. Whatever real measurements calibrated the generation rules lived
+in the generation pipeline, which is a separate repository I do not have.
+
+What I can say is structural: the architecture divides the corpus across
+six specialists, and the input space is combinatorial across product,
+treatment, concentration, temperature, packaging and indicator. A corpus of
+a few hundred observations divided six ways could not populate that space,
+whatever its exact size.
+\end{questionbox}
+
+\begin{questionbox}[title=``Was the original $\rsq$ overfitting?'']
+Not in the classical sense, and the distinction matters. Classical
+overfitting means high training performance and poor held-out performance.
+Here the held-out performance was high. What we found is an evaluation
+whose held-out set was not independent at the level that governs the
+mapping: $100\%$ of test rows came from generation rules present in
+training. The models generalise well \emph{within} the rules they were
+trained on, which is real but narrow, and the original protocol could not
+distinguish that from generalisation to new formulations.
+\end{questionbox}
+
+\begin{questionbox}[title=``Why didn't changing $K$ solve it?'']
+Because $K$ controls how many partitions the data is cut into, not which
+variable it is cut along. At $K=10$, every fold still contains rows from
+every generation rule. We measured $\rsq = 0.923 \pm 0.006$ at $K=5$ --- the
+low fold-to-fold variance is not stability, it is the folds being
+structurally interchangeable. Changing the grouping variable to
+\texttt{source\_rule\_id} is what changed the result.
+\end{questionbox}
+
+\begin{questionbox}[title=``Why did you use tree ensembles rather than something simpler?'']
+Under the original evaluation we could not have justified it --- ridge
+regression scored $0.910$ against LightGBM's $0.971$ on soft/general, and a
+small MLP scored $0.972$. That near-equivalence was one of the results that
+made us suspicious of the protocol.
+
+Under leave-rule-out the justification becomes clear: ridge falls to a mean
+$\rsq$ of $-0.874$ while LightGBM holds at $+0.627$. The ensembles' capacity
+is what carries transfer across rules. The revised evaluation is what
+allowed us to see that; the original one could not rank the models at all.
+\end{questionbox}
+
+\begin{questionbox}[title=``Why does Random Forest still score well after you hold out a rule?'']
+Two reasons, and they are different. For the large rules, the remaining
+rules genuinely do carry transferable structure --- the same temperature
+dependence and the same broad effect of a preservative class --- so a
+flexible model composes them reasonably. For the small rules, the held-out
+targets often lie inside the range already covered by training, so even a
+conservative prediction lands close.
+
+Where neither holds --- the clostridia rule, whose targets average $189$
+days against a training mean of $77$ --- the score collapses to $-3.86$.
+That is the honest picture: transfer works when the mechanism is
+represented and fails when it is not.
+\end{questionbox}
+
+\begin{questionbox}[title=``Why is one fold's $\rsq$ negative when its MAE is under a day?'']
+$\rsq$ is relative to the variance of the held-out set itself. The
+\texttt{RICOTTA\_MAP|NATAMYCIN\_REVIEW} fold has eight rows spanning $7.3$
+to $10.9$ days, so $s_y = 1.09$ days and the denominator is about $1.2$
+days\textsuperscript{2}. An average error of $0.94$ days is excellent in
+practice but consumes nearly the whole denominator.
+
+This is exactly why the report never quotes $\rsq$ alone. For these folds
+the MAE in days is the meaningful number, and the near-zero $\rsq$ is an
+honest signal that eight rows spanning three days cannot support a strong
+conclusion either way.
+\end{questionbox}
+
+\begin{questionbox}[title=``How can different generation rules still share information?'']
+Because the rule identifiers are composites. \texttt{NATAMYCIN\_REVIEW}
+appears in three different soft-cheese rules; \texttt{HARD\_SEMI\_REVIEW}
+appears in every hard/general rule. When we hold out
+\texttt{RICOTTA\_MAP|NATAMYCIN\_REVIEW}, the training set still contains
+two other rules built on \texttt{NATAMYCIN\_REVIEW}.
+
+I would treat our leave-rule-out numbers as an upper bound for that reason.
+The stricter test --- withholding every rule containing a given component
+--- is implementable from the identifiers alone and is the first item on
+our proposed work list.
+\end{questionbox}
+
+\begin{questionbox}[title=``Are the external literature cases genuinely independent?'']
+I cannot establish that from what I have. The external cases carry DOIs;
+the generation rules carry only component names like
+\texttt{NATAMYCIN\_REVIEW}, with no bibliographic metadata, and the
+source-to-rule mapping lives in the generation pipeline I do not have
+access to. Some component names --- \texttt{HMMC\_NAT}, which reads as
+high-moisture Mozzarella with natamycin --- correspond to products that
+also appear among the external cases, so overlap is plausible. I would not
+claim independence, and I have listed obtaining that mapping as the
+highest-value missing piece of evidence.
+\end{questionbox}
+
+\begin{questionbox}[title=``What would you need before claiming real-world performance?'']
+Four things, none of which we have. Real cases that fall inside the
+model's categorical support --- all $21$ we tested were flagged
+out-of-support by our own serving layer. Verified independence between
+those cases and the generation rules. Enough cases per specialist to put
+an interval on the estimate; twenty-one across three categories is not.
+And the censoring question resolved for the safety endpoints, where
+$100\%$ of hard-cheese rows are right-censored.
+
+Until then the defensible claim is the narrow one: cross-rule transfer on
+synthetic data, with external $\rsq = 0.172$ and MAE $39.4$ days as the
+current measured sim-to-real gap.
+\end{questionbox}
+
+\begin{questionbox}[title=``Is the safety-endpoint model broken?'']
+We thought so, and we were wrong --- which is worth correcting explicitly
+because it is written down elsewhere in our documentation. Under the
+original single context split, hard/safety scored $\rsq = -0.097$, which
+reads as unlearnable. Under $10$ rule-wise folds it has a median fold
+$\rsq$ of $0.790$ with every fold positive.
+
+The separate and more serious issue with that specialist is not its score
+but its target: all $3\,200$ of its rows are right-censored, so it is
+predicting the last time a pathogen criterion had not yet been reached,
+not the time it is reached. That needs to be relabelled and, ideally,
+refitted with a censoring-aware objective.
+\end{questionbox}
+
+\begin{questionbox}[title=``What is the single most important thing you learned?'']
+That a leakage-safe split can be correctly implemented and still measure
+the wrong thing. The splitting code does exactly what it says: zero
+contexts cross the boundary in any of the six specialists. The error was
+not in the code but in assuming that the unit the code protects ---
+the context --- was the unit that carries the information. In a
+synthetic corpus it is the generator, and nothing in the protocol was
+looking at it.
+\end{questionbox}

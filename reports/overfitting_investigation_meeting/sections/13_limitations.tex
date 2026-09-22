@@ -1,0 +1,193 @@
+\chapter{What leave-rule-out does not fix}
+\label{ch:limits}
+
+\begin{saybox}[title={What to say at the start of this section}]
+Volunteer these limitations before the panel raises them. The credibility
+of everything in the previous chapters depends on being seen to understand
+what the revised protocol still cannot measure. There are four items, and
+the fourth --- censoring --- is the one that was found during this audit
+and was not previously documented.
+\end{saybox}
+
+\section{Limitation 1: rules are not independent of each other}
+
+Leave-rule-out removes one \texttt{source\_rule\_id} at a time. It does not
+remove the \emph{components} that rule shares with others.
+\Cref{ch:rules} showed that rule identifiers are pipe-delimited
+composites: \texttt{NATAMYCIN\_REVIEW} appears in three different soft
+rules, \texttt{HARD\_SEMI\_REVIEW} appears in every hard/general rule
+without exception, and \texttt{CLOSTRIDIA\_GRANA} appears in every
+clostridia rule in two specialists.
+
+When \texttt{RICOTTA\_MAP|NATAMYCIN\_REVIEW} is held out, the training set
+still contains \texttt{NATAMYCIN\_REVIEW} alone and
+\texttt{HMMC\_NAT|NATAMYCIN\_REVIEW}. If those rules share calibration
+constants or a common parametric form --- which their shared naming makes
+plausible but which cannot be verified without the generator --- then the
+fold is not a clean test of transfer to an unseen mechanism.
+
+\begin{limitbox}[title={Consequence}]
+Leave-rule-out is best understood as an \emph{upper bound relaxation}, not
+an exact measurement of mechanism transfer. It is strictly more honest than
+the context-holdout protocol, and it is still optimistic relative to a
+test on a genuinely independent mechanism.
+
+A stricter variant --- leave-one-\emph{source-component}-out, withholding
+every rule containing a given component --- is implementable from the
+identifiers alone and is recommended in \Cref{ch:proposals}. It has not
+been run.
+\end{limitbox}
+
+\section{Limitation 2: all rules come from the same generator}
+
+Even a perfectly independent set of rules would share the generator's
+global assumptions: its functional forms, its noise model, its treatment of
+temperature dependence, its clipping and bounding behaviour. A model that
+transfers across rules from one generator has demonstrated that it can
+learn that generator's family of relationships. It has not demonstrated
+anything about relationships the generator cannot produce.
+
+Since the generator is not in this repository (\Cref{sec:limit-evidence}),
+the size of this gap cannot be quantified here at all. It can only be
+flagged.
+
+\section{Limitation 3: synthetic transfer is not real-world transfer}
+
+This is the most important non-claim in the report, and it should be stated
+in exactly these terms at the meeting:
+
+\begin{findingbox}[title={The claim that may be made, and the one that may not}]
+\textbf{May be claimed:} under leave-one-generation-rule-out
+cross-validation on the V7 synthetic corpus, LightGBM achieves a median
+fold $\rsq$ of $0.780$ and a pooled out-of-fold $\rsq$ between $0.67$ and
+$0.96$ depending on the specialist, with median absolute error under four
+days.
+
+\textbf{May not be claimed:} that the model predicts the shelf life of
+real cheese to that accuracy. No internal metric computed on synthetic
+data can support that statement, however the folds are constructed. The
+only evidence that bears on it is external, and \Cref{ch:external}
+presents it.
+\end{findingbox}
+
+\section{Limitation 4: right-censoring in the safety endpoints}
+\label{sec:censoring}
+
+This was discovered during the present audit and is, on the evidence, not
+documented elsewhere in the project.
+
+The column \texttt{target\_is\_lower\_bound} flags rows whose recorded
+\texttt{shelf\_life\_days} is a \emph{lower bound} on the true event time
+rather than the event time itself --- the standard situation in a challenge
+study where the pathogen had not reached its criterion when the study
+ended. Its distribution across the six specialists:
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+Specialist & rows & censored ($=1$) & share censored \\
+\midrule
+soft / general & 8\,800 & 0 & $0\%$ \\
+semi-hard / general & 7\,200 & 0 & $0\%$ \\
+hard / general & 6\,000 & 0 & $0\%$ \\
+\addlinespace[2pt]
+soft / safety & 4\,800 & 3\,469 & $72.3\%$ \\
+semi-hard / safety & 4\,000 & 3\,784 & $94.6\%$ \\
+hard / safety & 3\,200 & 3\,200 & $\mathbf{100.0\%}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{findingbox}[title={Every row of the hard/safety-endpoint specialist is right-censored}]
+All $3\,200$ rows of the hard safety specialist carry
+\texttt{target\_is\_lower\_bound = 1}. The specialist is therefore not
+trained to predict the time at which a pathogen criterion is reached. It is
+trained to predict \emph{the last time point at which the criterion had not
+yet been reached} --- a quantity determined partly by the duration of the
+underlying study design.
+
+For soft/safety the two subpopulations differ sharply: censored rows
+average $39.3$ days, uncensored rows $12.1$ days. A squared-error
+regression fitted across both is fitting a mixture of two different
+quantities.
+\end{findingbox}
+
+\subsection{Why this matters statistically}
+
+For a censored observation the recorded value satisfies
+$y_{\text{obs}} = \min(T, C)$ where $T$ is the true event time and $C$ the
+censoring time. Least-squares regression minimises
+$\sum_i (y_{\text{obs},i} - \hat{f}(\mathbf{x}_i))^2$, which targets
+$\mathbb{E}[\min(T, C) \mid \mathbf{x}]$, not $\mathbb{E}[T \mid \mathbf{x}]$.
+Since $\min(T,C) \le T$ always, the fitted model is biased low as an
+estimator of the true failure time --- and the magnitude of that bias
+depends on the censoring distribution, which is an artefact of study design
+rather than of cheese microbiology.
+
+Recall also from \Cref{sec:exclusions} that \texttt{target\_is\_lower\_bound}
+is on the exclusion list, for the defensible reason that it would not be
+known at prediction time. The consequence is that the loss function has no
+way to distinguish the two kinds of row.
+
+\subsection{What this does not mean}
+
+It does not mean the safety predictions are worthless. A model of
+``time by which the criterion was demonstrably not yet reached'' is a
+conservative quantity, and for a safety application conservatism in this
+direction is arguably the safer error. But it must be \emph{described}
+correctly, and at present it is described as shelf life.
+
+Standard remedies exist --- Tobit regression, accelerated failure time
+models, or a censoring-aware gradient-boosting objective --- and
+\Cref{ch:proposals} lists the diagnostic that should be run first.
+
+\section{Limitation 5: hyperparameter selection was not group-aware}
+\label{sec:hparam}
+
+Under the original protocol, LightGBM and XGBoost select their number of
+boosting rounds by early stopping on the validation partition. That
+partition is drawn from the same generation rules as the test partition
+(\Cref{ch:discovery}, $100\%$ rule overlap). The stopping iteration is
+therefore selected using information about the rules on which the model is
+subsequently scored.
+
+The effect is second-order compared with the partitioning issue itself ---
+early stopping selects one scalar, not a model --- but it is a real
+dependency and it is worth stating. In the leave-rule-out harness the
+rounds are fixed a priori, which removes the dependency but leaves $M$
+untuned. A fully clean design would use nested, group-aware selection:
+an inner leave-rule-out loop over the training rules of each outer fold.
+This has not been run.
+
+\section{Limitation 6: feature audit}
+\label{sec:leakage}
+
+Every feature reaching the model was checked against the target for the
+classical leakage patterns. The findings:
+
+\begin{itemize}[leftmargin=1.3em, itemsep=2pt]
+\item \textbf{No identifier reaches the model.} \texttt{row\_id},
+  \texttt{context\_id}, \texttt{formulation\_id} and
+  \texttt{source\_rule\_id} are all excluded.
+\item \textbf{No provenance column reaches the model.}
+  \texttt{data\_origin}, \texttt{source\_url}, \texttt{source\_note},
+  \texttt{evidence\_class}, \texttt{generation\_rule\_version} are
+  excluded.
+\item \textbf{No recomputed target reaches the model.}
+  \texttt{shelf\_life\_days\_v4\_original} and
+  \texttt{target\_recalibration\_factor} --- which would be direct
+  leakage --- are on the exclusion list.
+\item \textbf{\texttt{indicator\_threshold} and
+  \texttt{initial\_indicator\_value} are included, and should be.} They are
+  legitimate inputs: the threshold defines what ``end of shelf life'' means
+  for that row, and the initial load is a measurable property of the
+  product at time zero. Both would be available at prediction time.
+\item \textbf{\texttt{matrix\_ripening\_days} is included.} It is a
+  composition descriptor, not a downstream measurement, but for hard
+  cheeses it correlates with the maturation state that also drives the
+  target. It is not leakage, but it is the feature most worth a second
+  look.
+\end{itemize}
+
+No target-derived feature was found among the model inputs. The high scores
+are not explained by leakage in the technical sense.

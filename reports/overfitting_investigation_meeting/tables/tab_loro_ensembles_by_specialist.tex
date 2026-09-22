@@ -1,0 +1,30 @@
+\begin{tabular}{llrrrrrr}
+\toprule
+Specialist & Model & folds & mean $R^2$ & median $R^2$ & s.d. & min & max \\
+\midrule
+soft/general shelf life & lightgbm & 7 & 0.752 & \textbf{0.831} & 0.256 & 0.25 & 0.984 \\
+ & random\_forest & 7 & 0.604 & \textbf{0.875} & 0.484 & -0.33 & 0.977 \\
+ & xgboost & 7 & 0.651 & \textbf{0.806} & 0.427 & -0.28 & 0.983 \\
+\addlinespace[2pt]
+semi-hard/general shelf life & lightgbm & 12 & 0.782 & \textbf{0.871} & 0.183 & 0.28 & 0.939 \\
+ & random\_forest & 12 & 0.737 & \textbf{0.782} & 0.165 & 0.37 & 0.955 \\
+ & xgboost & 12 & 0.748 & \textbf{0.840} & 0.195 & 0.27 & 0.933 \\
+\addlinespace[2pt]
+hard/general shelf life & lightgbm & 8 & 0.182 & \textbf{0.703} & 1.079 & -2.54 & 0.925 \\
+ & random\_forest & 8 & -0.097 & \textbf{0.630} & 1.499 & -3.86 & 0.906 \\
+ & xgboost & 8 & -0.033 & \textbf{0.568} & 1.070 & -2.31 & 0.910 \\
+\addlinespace[2pt]
+soft/safety endpoint & lightgbm & 11 & 0.600 & \textbf{0.705} & 0.327 & -0.19 & 0.951 \\
+ & random\_forest & 11 & 0.692 & \textbf{0.812} & 0.323 & -0.17 & 0.988 \\
+ & xgboost & 11 & 0.589 & \textbf{0.671} & 0.304 & -0.16 & 0.929 \\
+\addlinespace[2pt]
+semi-hard/safety endpoint & lightgbm & 8 & 0.737 & \textbf{0.787} & 0.157 & 0.49 & 0.924 \\
+ & random\_forest & 8 & 0.812 & \textbf{0.856} & 0.158 & 0.58 & 0.982 \\
+ & xgboost & 8 & 0.649 & \textbf{0.690} & 0.182 & 0.27 & 0.853 \\
+\addlinespace[2pt]
+hard/safety endpoint & lightgbm & 10 & 0.707 & \textbf{0.781} & 0.207 & 0.37 & 0.927 \\
+ & random\_forest & 10 & 0.743 & \textbf{0.790} & 0.210 & 0.39 & 0.971 \\
+ & xgboost & 10 & 0.697 & \textbf{0.736} & 0.190 & 0.37 & 0.916 \\
+\addlinespace[2pt]
+\bottomrule
+\end{tabular}

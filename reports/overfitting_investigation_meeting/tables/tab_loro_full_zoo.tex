@@ -1,0 +1,23 @@
+\begin{tabular}{lrrrrr}
+\toprule
+Model & mean $R^2$ & median $R^2$ & mean s.d. & worst fold & best fold \\
+\midrule
+random\_forest\_production\_hparams & 0.582 & \textbf{0.791} & 0.473 & -3.86 & 0.988 \\
+lightgbm\_production\_hparams & 0.627 & \textbf{0.780} & 0.368 & -2.54 & 0.984 \\
+xgboost\_production\_hparams & 0.550 & \textbf{0.719} & 0.395 & -2.31 & 0.983 \\
+extra\_trees & 0.209 & \textbf{0.492} & 0.659 & -4.68 & 0.974 \\
+gradient\_boosting & 0.280 & \textbf{0.450} & 0.500 & -2.95 & 0.967 \\
+small\_mlp & 0.219 & \textbf{0.342} & 0.430 & -1.88 & 0.961 \\
+shallow\_random\_forest & -0.230 & \textbf{0.278} & 1.295 & -14.20 & 0.940 \\
+shallow\_decision\_tree & -1.733 & \textbf{0.192} & 3.531 & -38.95 & 0.907 \\
+svr\_rbf & -0.454 & \textbf{-0.153} & 1.009 & -9.84 & 0.942 \\
+adaboost & -1.248 & \textbf{-0.178} & 2.517 & -17.30 & 0.951 \\
+elastic\_net & -0.772 & \textbf{-0.675} & 1.432 & -16.54 & 0.907 \\
+lasso & -0.690 & \textbf{-0.736} & 1.364 & -17.01 & 0.913 \\
+bayesian\_ridge & -0.872 & \textbf{-0.795} & 1.661 & -22.76 & 0.902 \\
+ridge\_regression & -0.874 & \textbf{-0.798} & 1.664 & -22.74 & 0.902 \\
+pls\_regression & -1.106 & \textbf{-0.952} & 1.987 & -28.55 & 0.893 \\
+knn\_regressor\_k5 & -3.412 & \textbf{-1.537} & 5.077 & -55.18 & 0.940 \\
+dummy\_mean\_baseline & -15.637 & \textbf{-12.833} & 18.400 & -219.46 & -0.000 \\
+\bottomrule
+\end{tabular}

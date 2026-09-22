@@ -1,0 +1,367 @@
+\chapter{Fold-level investigation: what actually goes wrong}
+\label{ch:folds}
+
+\begin{saybox}[title={What to say at the start of this section}]
+This is the section that answers ``so what is the model actually bad at?''
+Do not speak in generalities about distribution shift. Name the rule, name
+the cheese, name the preservative, give the numbers in days. Every claim in
+this chapter is traceable to a specific set of rows in
+\texttt{rf\_fold\_predictions.csv}.
+\end{saybox}
+
+\section{Method for this chapter}
+
+The historical leave-rule-out experiments stored only per-fold summary
+statistics. To investigate individual folds, the evaluation was re-executed
+with identical data, identical hyperparameters and the identical fold
+construction, retaining every out-of-fold prediction
+(\evd{scripts/experiments/leave\_rule\_out\_row\_level.py}).
+
+\begin{limitbox}[title={Reconstruction, clearly labelled}]
+The row-level predictions analysed here come from a \textbf{re-execution},
+not from the original diagnostic run. The original summary files are
+retained unmodified in
+\evd{scripts/experiments/overfitting\_diagnosis/}. The reconstruction
+reproduces the original per-fold $\rsq$ values to the precision reported,
+which is expected given the shared seed and the deterministic fold
+construction, but the distinction is preserved rather than glossed: the
+figures in this chapter are labelled as reconstructed.
+\end{limitbox}
+
+Each of the $56$ folds was predicted by all three tree ensembles, giving
+$168$ fold results and $102\,000$ row-level predictions with full
+formulation context attached: cheese product, physical form, treatment
+ingredient and concentration, storage temperature, packaging, indicator
+type and threshold, the observed target, the prediction, and the signed
+error.
+
+\tbllong{tab_folds_random_forest}{Complete Random Forest fold results. Every
+held-out generation rule in every specialist, sorted by $\rsq$ within
+specialist. Negative $\rsq$ values are bold.}
+
+\section{The four weakest folds}
+
+\tbl{tab_worst_fold_detail}{Side-by-side diagnostic profile of the four
+weakest Random Forest folds. Every cell is computed from the held-out rows
+themselves or from the corresponding training partition.}
+
+\fig{fig31_worst_folds_scatter}{0.98}{%
+  Actual against predicted shelf life for the four weakest folds. Note the
+  scale differences: the two natamycin folds on the right are compressed
+  into a few days, while the clostridia fold on the left spans hundreds.}
+
+\fig{fig21_fold_size_vs_r2}{0.88}{%
+  Fold $\rsq$ against the number of rows in the held-out rule for all
+  $168$ fold results. Large folds are consistently well predicted; the
+  dispersion is almost entirely among rules with fewer than $200$ rows ---
+  with one crucial exception at $620$ rows, analysed below.}
+
+\section{Fold 1: \texttt{CLOSTRIDIA|CLOSTRIDIA\_GRANA|HARD\_SEMI\_REVIEW}}
+\label{sec:fold-clostridia}
+
+This is the worst fold in the entire study and the only large one that
+fails. It is also the most instructive, because its cause can be
+established rather than hypothesised.
+
+\subsection{What was held out}
+
+\begin{description}[leftmargin=1.5em, style=nextline, font=\bfseries\color{dgreen}, itemsep=1pt]
+\item[Specialist] hard / general shelf life
+\item[Rows] $620$ held out, $3\,580$ remaining for training
+\item[Cheese products] pecorino romano, gruyère, manchego, parmigiano
+  reggiano, cheddar, emmental --- \emph{all six also present in training}
+\item[Treatments] none (control), lysozyme, potassium nitrate, protective
+  \emph{Lactobacillus} culture
+\item[Indicator] \texttt{clostridia} --- exclusively
+\item[Storage temperature] $8$--$15^\circ$C (training spans $2$--$15^\circ$C)
+\item[Ripening] $78.5$--$843.1$ days (training spans $67.2$--$877.9$)
+\end{description}
+
+\subsection{Observed result}
+
+Random Forest: $\rsq = -3.860$, MAE $= 67.4$ days, RMSE $= 83.1$ days, mean
+signed error $= -62.2$ days. The model under-predicts by roughly two months
+on average. Actual targets: mean $189.0$ days, range $69.5$--$240.0$,
+$s_y = 37.7$. Predictions: mean $126.8$ days.
+
+\subsection{Diagnosis}
+
+Working through the candidate explanations in order:
+
+\paragraph{Is it an unseen product?} No. All six cheese products in the
+held-out rule also appear in the training partition. Product novelty is
+eliminated.
+
+\paragraph{Is it fold size?} No. At $620$ rows this is the third-largest
+fold in the specialist. Small-sample instability is eliminated.
+
+\paragraph{Is it low target variance?} No. $s_y = 37.7$ days is
+substantial. The $\rsq$ denominator is large; the numerator is simply
+larger.
+
+\paragraph{Is it an unseen \emph{mechanism}?} Yes --- and this is
+demonstrable. Cross-tabulating \texttt{indicator\_type} against
+\texttt{source\_rule\_id} within hard/general shows that the
+\texttt{clostridia} indicator appears in exactly two rules: this one
+($620$ rows) and a small sibling,
+\texttt{CLOSTRIDIA|CLOSTRIDIA\_GRANA|HARD\_SEMI\_REVIEW|SHRED\_NAT}
+($32$ rows). When this rule is withheld, only $32$ clostridia rows remain
+in training out of $3\,580$.
+
+The clostridia endpoint operates on a completely different time scale from
+every other indicator in the specialist:
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+\texttt{indicator\_type} & rows & mean $y$ (d) & range (d) \\
+\midrule
+\textbf{clostridia} & 652 & \textbf{188.8} & 69.5--240.0 \\
+molds & 432 & 68.3 & 23.6--132.5 \\
+oxidation\_index & 876 & 83.2 & 27.1--162.3 \\
+peroxide\_value & 388 & 81.3 & 35.5--134.8 \\
+ph & 356 & 81.5 & 32.7--155.9 \\
+sensory\_acceptability & 1\,076 & 81.9 & 31.1--177.7 \\
+total\_viable\_count & 988 & 75.1 & 19.6--147.3 \\
+yeasts\_molds & 1\,232 & 67.2 & 17.3--137.7 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Late blowing by clostridia is a slow ripening-associated defect; the other
+indicators track surface or bulk spoilage that manifests in weeks. The
+mean target for clostridia rows is $2.3\times$ that of any other indicator.
+
+\paragraph{The mechanism of failure.} With the rule withheld, the training
+target mean falls to $76.9$ days against the held-out mean of $189.0$. By
+\cref{eq:rf-bound}, the forest's prediction is a weighted average of
+training targets, so it is structurally confined near the training range.
+It predicts $126.8$ days on rows whose truth averages $189.0$ --- a
+$-62.2$ day bias that is not a tuning failure but a consequence of what
+tree averaging can represent.
+
+\subsection{The controlled confirmation}
+
+This specialist supplies its own natural control, and it is the strongest
+piece of evidence in the chapter. The small sibling rule
+(\texttt{...|SHRED\_NAT}, $32$ clostridia rows) has its own fold. When
+\emph{it} is withheld, the $620$-row clostridia rule remains in training,
+so the mechanism is represented. The result:
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+Held-out rule & rows & clostridia rows left in training & $\rsq$ & bias (d) \\
+\midrule
+\texttt{CLOSTRIDIA|CLOSTRIDIA\_GRANA|HARD\_SEMI\_REVIEW} & 620 & 32 & $-3.860$ & $-62.2$ \\
+\texttt{CLOSTRIDIA|...|SHRED\_NAT} & 32 & 620 & $\mathbf{+0.734}$ & $+1.2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Same specialist, same model, same indicator, same products, nearly
+inverted fold sizes --- and the difference in outcome tracks the
+availability of the \emph{mechanism} in training, not the size of the test
+set. The smaller fold is predicted well because its mechanism is
+represented; the larger fold fails because its mechanism is not.
+
+\subsection{A second, stronger control: the same rule in a different specialist}
+
+The identical rule identifier
+\texttt{V7|CLOSTRIDIA|CLOSTRIDIA\_GRANA|HARD\_SEMI\_REVIEW} also occurs in
+the \emph{semi-hard} specialist, again with exactly $620$ rows. The
+difference is what surrounds it: semi-hard contains three clostridia rules
+($620 + 76 + 64 = 760$ rows) where hard contains two ($620 + 32 = 652$).
+Withholding the same rule therefore leaves $140$ clostridia rows in
+training in semi-hard, against $32$ in hard.
+
+\begin{center}\small
+\begin{tabular}{llrrrr}
+\toprule
+Specialist & Model & held-out rows & clostridia rows left & $\rsq$ & bias (d) \\
+\midrule
+\multirow{3}{*}{semi-hard/general} & Random Forest & 620 & 140 & $+0.612$ & $-3.9$ \\
+ & LightGBM & 620 & 140 & $+0.672$ & $-1.4$ \\
+ & XGBoost & 620 & 140 & $+0.519$ & $-10.3$ \\
+\addlinespace[3pt]
+\multirow{3}{*}{hard/general} & Random Forest & 620 & 32 & $-3.860$ & $-62.2$ \\
+ & LightGBM & 620 & 32 & $-2.665$ & $-44.2$ \\
+ & XGBoost & 620 & 32 & $-2.305$ & $-52.5$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Identical rule, identical fold size, identical models, identical protocol.
+The only material difference is how much of the clostridia mechanism
+survives in the training partition, and the outcome moves from
+$\rsq = +0.612$ to $\rsq = -3.860$ across all three model families. It is
+difficult to construct a cleaner demonstration that the governing variable
+is mechanism coverage.
+
+\begin{findingbox}[title={Verified explanation, not a hypothesis}]
+Hard/general's collapse under leave-rule-out is attributable to a single
+held-out rule that carries the only substantial representation of the
+clostridia spoilage mechanism, whose characteristic time scale is roughly
+two and a half times that of every other indicator in the specialist. The
+controlled comparison above rules out fold size and product novelty as
+explanations. This is the one fold in the study whose cause is established
+by a within-data experiment rather than inferred.
+\end{findingbox}
+
+\fig{fig32_target_distributions}{0.98}{%
+  Target distributions for the four weakest folds: the training rules
+  against the held-out rule. The clostridia panel (left) shows almost
+  disjoint support --- the held-out mass sits where the training data has
+  almost none.}
+
+\fig{fig33_feature_distributions_worst}{0.98}{%
+  Input-feature coverage for the clostridia fold. The inputs are well
+  covered by training data; it is the \emph{target} relationship that is
+  not. This is the figure that distinguishes covariate shift from
+  mechanism novelty.}
+
+\tbl{tab_largest_errors}{The individual rows with the largest absolute
+errors in the two worst folds, with their actual formulation context.}
+
+\section{Fold 2: \texttt{HARD\_SEMI\_REVIEW|SHRED\_NAT}}
+
+\begin{description}[leftmargin=1.5em, style=nextline, font=\bfseries\color{dgreen}, itemsep=1pt]
+\item[Held out] $135$ rows, all \textbf{shredded cheddar}
+\item[Treatments] control, chitosan, calcium propionate, lactic acid,
+  protective culture, potassium sorbate
+\item[Packaging] MAP at three CO\textsubscript{2} levels plus
+  high-barrier sealed
+\item[Result] $\rsq = -0.377$, MAE $= 7.7$ days, bias $= +6.9$ days
+\end{description}
+
+Actual targets average $38.4$ days ($s_y = 8.3$); the training partition
+averages $89.7$ days. Here the held-out rule sits \emph{below} the training
+range and the model over-predicts by seven days.
+
+The distinguishing feature is \texttt{physical\_form = shredded}. Shredding
+multiplies exposed surface area and shortens shelf life sharply relative to
+block cheese of identical composition. Cheddar itself is well represented
+in training ($179$ control rows, $58$ with chitosan, $18$ with calcium
+propionate), so again the product is not novel --- the \emph{form} is
+under-represented once its rule is withheld, and the model regresses
+towards block-cheddar behaviour.
+
+\section{Folds 3 and 4: the natamycin combination folds}
+\label{sec:fold-natamycin}
+
+These two folds directly test a hypothesis that was raised in advance: that
+the training set may contain a cheese and a preservative separately while
+containing no rows for their \emph{combination}. The data confirms it
+exactly.
+
+\subsection{\texttt{RICOTTA\_MAP|NATAMYCIN\_REVIEW} --- 8 rows}
+
+\begin{center}\small
+\begin{tabular}{lr}
+\toprule
+Quantity & Value \\
+\midrule
+Held-out rows & 8 (ricotta, fresh mass, natamycin, yeasts/moulds) \\
+Ricotta rows in training & 428 \\
+Natamycin rows in training & 169 \\
+\textbf{Ricotta $+$ natamycin rows in training} & \textbf{0} \\
+Mean $y$, training ricotta rows & 6.6 days \\
+Mean $y$, training natamycin rows (18 other cheeses) & 29.0 days \\
+Actual $y$, held-out rows & 9.5 days ($s_y = 1.09$, range 7.3--10.9) \\
+Random Forest $\rsq$ & 0.072 \\
+Random Forest MAE & \textbf{0.94 days} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The model must compose two facts it has seen separately --- ricotta is
+short-lived; natamycin extends shelf life --- for a combination it has
+never seen. It does so almost perfectly: the average error is
+\textbf{under one day}. The $\rsq$ of $0.072$ is near zero only because the
+eight held-out rows span $3.6$ days in total, so $s_y^2 = 1.19$
+days\textsuperscript{2} leaves essentially no variance to explain.
+
+\subsection{\texttt{HMMC\_NAT|NATAMYCIN\_REVIEW} --- 17 rows}
+
+The same structure with fior di latte and fresh mozzarella: $448$ and
+$468$ training rows for those products, $160$ natamycin rows across
+seventeen other cheeses, and \textbf{zero} rows for either product
+combined with natamycin. Actual targets average $8.1$ days
+($s_y = 1.83$); Random Forest achieves MAE $= 2.0$ days and
+$\rsq = -0.335$.
+
+\begin{findingbox}[title={How to present these two folds}]
+These are the folds most likely to be misread, in either direction.
+
+\emph{Do not} present $\rsq = -0.335$ as a catastrophic failure: the model
+predicts an eight-day shelf life to within two days having never seen the
+product--preservative combination, which is a genuinely reasonable result.
+
+\emph{Do not} present MAE $= 0.94$ days as proof of excellent
+generalization either: eight rows spanning three and a half days is far too
+little evidence to support any general claim, and the near-zero $\rsq$ is
+an honest signal of exactly that.
+
+The correct statement is that on unseen product--preservative
+combinations the model produces plausible compositional predictions, and
+that these folds are too small to quantify how reliably.
+\end{findingbox}
+
+\section{Why the mean and the median disagree}
+
+The soft/general specialist has median fold $\rsq = 0.875$ but mean fold
+$\rsq = 0.604$. Both are correct, and the gap is entirely accounted for by
+the two natamycin folds analysed above --- $8$ and $17$ rows out of
+$8\,800$, together $0.28\%$ of the specialist's data, each weighted at
+$1/7$ of the mean.
+
+Hard/general is the same arithmetic with the opposite cause: median $0.630$
+against mean $-0.097$, driven by the single clostridia fold, which is
+\emph{not} small and where the low score is substantively meaningful.
+
+\begin{findingbox}[title={Why this report never quotes one summary alone}]
+Mean fold $\rsq$ weights an $8$-row rule equally with a $5\,654$-row rule.
+Median fold $\rsq$ conceals the clostridia failure entirely. Pooled
+out-of-fold $\rsq$ weights by row count and would let a small but
+scientifically important rule disappear. MAE in days is robust to the
+variance denominator but blind to whether the model beats a constant.
+
+No single number is adequate. All four are reported for every specialist
+throughout this document, and the recommendation in \Cref{ch:proposals} is
+that they continue to be reported together.
+\end{findingbox}
+
+\section{Fold-level results for all specialists}
+
+The three quality specialists and the three safety specialists behave
+differently under this protocol, and the full per-fold tables
+(\Cref{tab:tab_folds_random_forest,tab:tab_folds_lightgbm,tab:tab_folds_xgboost})
+support the following summary observations:
+
+\begin{itemize}[leftmargin=1.3em, itemsep=2pt]
+\item \textbf{soft/general (7 folds).} Five folds above $\rsq = 0.87$; the
+  two failures are the $8$- and $17$-row natamycin composites.
+\item \textbf{semi-hard/general (12 folds).} The most stable specialist:
+  every fold positive, range $0.374$--$0.955$, median $0.782$.
+\item \textbf{hard/general (8 folds).} Median $0.630$, but two negative
+  folds including the clostridia rule; the weakest specialist under this
+  protocol.
+\item \textbf{soft/safety (11 folds).} Median $0.812$, mean $0.692$; the
+  spread comes from the small \emph{Listeria} composite rules.
+\item \textbf{semi-hard/safety (8 folds).} Every fold positive, median
+  $0.856$ --- against an original context-holdout score of $0.342$.
+\item \textbf{hard/safety (10 folds).} Every fold positive, median $0.790$
+  --- against an original context-holdout score of $-0.097$.
+\end{itemize}
+
+\begin{findingbox}[title={A revision to an earlier conclusion}]
+The two safety specialists that looked broken under the original protocol
+are not broken. Under $10$ and $8$ structured folds respectively they show
+consistent, uniformly positive predictive skill (median $\rsq$ of $0.790$
+and $0.856$). The original single random context split produced an
+unrepresentative test partition for these specialists.
+
+This correction should be stated explicitly at the meeting, because the
+earlier reading --- that hard/safety-endpoint was fundamentally
+unlearnable --- was recorded in project documentation and is wrong.
+\end{findingbox}

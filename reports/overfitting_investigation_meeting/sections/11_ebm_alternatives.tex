@@ -1,0 +1,169 @@
+\chapter{EBM and the alternative model families}
+\label{ch:ebm}
+
+\section{The Explainable Boosting Machine}
+
+EBM is a generalized additive model with bounded interactions, fitted by
+cyclic gradient boosting on one feature at a time:
+\begin{equation}
+g\!\left(\mathbb{E}[y \mid \mathbf{x}]\right)
+= \beta_0
++ \sum_{j=1}^{p} f_j(x_j)
++ \sum_{(j,k) \in \mathcal{I}} f_{jk}(x_j, x_k),
+\qquad |\mathcal{I}| = 10 .
+\end{equation}
+Because each $f_j$ is a one-dimensional step function of a single feature,
+the fitted model is directly readable: one can plot the learned effect of
+storage temperature on shelf life and inspect it. This interpretability is
+why it is in the production candidate set.
+
+Its production configuration is \texttt{interactions=10},
+\texttt{max\_bins=256}, \texttt{learning\_rate=0.02},
+\texttt{max\_rounds=3000}, \texttt{min\_samples\_leaf=4},
+\texttt{outer\_bags=8}.
+
+\subsection{EBM's original results}
+
+From \Cref{tab:tab_production_v7}, EBM is consistently the weakest of the
+four production families under the original protocol: $0.944$ on
+soft/general against LightGBM's $0.971$, and $-0.528$ on hard/safety
+against LightGBM's $-0.024$. The additive structure with only ten
+interaction terms is a genuine capacity restriction relative to a
+fully-interacting tree ensemble.
+
+\subsection{Why EBM is absent from the leave-rule-out results}
+
+\begin{limitbox}[title=Stated gap in the revised evaluation]
+EBM was \textbf{not} re-evaluated under leave-one-rule-out. The reason is
+mechanical rather than scientific: the production EBM pipeline uses its own
+preprocessing path (a frame-level imputer preserving native categorical
+handling), not the shared scaled-and-one-hot \texttt{ColumnTransformer}
+that every other model in the diagnostic harness uses. Running it inside
+the shared harness would have changed its preprocessing as well as its
+partitioning, confounding the comparison.
+
+Consequently, \textbf{EBM's context-holdout numbers must not be placed
+alongside the other models' leave-rule-out numbers as though they were
+comparable.} They measure different things. Completing this evaluation
+with EBM's own pipeline and the same rule-wise folds is a concrete,
+bounded piece of outstanding work, listed in \Cref{ch:proposals}.
+\end{limitbox}
+
+\section{The alternative model families}
+
+Thirteen further configurations were evaluated under both protocols. Their
+behaviour under the protocol change is the clearest single illustration of
+what the change measures.
+
+\subsection{Regularised linear models}
+
+Ridge, lasso, elastic net, Bayesian ridge and PLS regression all fit
+\begin{equation}
+\hat{y} = \beta_0 + \sum_{j} \beta_j x_j,
+\end{equation}
+differing only in the penalty applied to $\boldsymbol{\beta}$: $L_2$ for
+ridge, $L_1$ for lasso, a convex combination for elastic net, a Gaussian
+prior for Bayesian ridge, and a latent-component projection for PLS.
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+\toprule
+Model & \multicolumn{2}{c}{context-holdout $\rsq$} & \multicolumn{2}{c}{leave-rule-out $\rsq$} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+ & soft/general & mean, 6 spec. & mean & median \\
+\midrule
+ridge regression & 0.910 & 0.594 & $-0.874$ & $-0.798$ \\
+lasso & 0.908 & 0.595 & $-0.690$ & $-0.736$ \\
+elastic net & 0.895 & 0.592 & $-0.772$ & $-0.675$ \\
+Bayesian ridge & 0.910 & 0.597 & $-0.872$ & $-0.795$ \\
+PLS regression & 0.902 & 0.594 & $-1.106$ & $-0.952$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The two context-holdout columns are given separately because the
+six-specialist mean is dragged down by the safety specialists, where every
+model scores poorly; the soft/general column is the like-for-like
+comparison against the production figure of $0.971$.
+
+\begin{findingbox}[title=The linear-model collapse]
+Ridge regression scores $\rsq = 0.910$ on soft/general under the original
+protocol --- close enough to the production LightGBM's $0.971$ that it was
+initially taken as evidence that model complexity was irrelevant to the
+problem. Under leave-rule-out the same model scores a mean $\rsq$ of
+$-0.874$: substantially worse than predicting a constant.
+
+The interpretation is that a global linear fit can interpolate
+\emph{within} the known rules, because within any one rule the mapping is
+locally smooth --- but it has no mechanism for representing a rule it has
+not seen, and its extrapolations are actively harmful. The conclusion from
+Experiment 1 therefore needs a correction: model complexity is irrelevant
+to \emph{within-rule interpolation} but decisive for \emph{cross-rule
+transfer}.
+\end{findingbox}
+
+\subsection{Instance-based and kernel methods}
+
+$k$-nearest neighbours ($k=5$) predicts the mean target of the five
+nearest training rows in standardised feature space. It scores $0.905$ on
+soft/general under the original protocol and a mean of $-3.412$ under
+leave-rule-out --- the worst non-trivial model in the study. The failure
+mode is transparent: when the entire mechanism is removed, the nearest
+neighbours are drawn from different mechanisms, and their average carries
+no relevant information.
+
+RBF-kernel SVR fits
+$\hat{y} = \sum_i \alpha_i \exp(-\gamma \lVert \mathbf{x} - \mathbf{x}_i \rVert^2) + b$,
+with training subsampled to $4\,000$ rows for tractability. It scores
+$0.946$ on soft/general then a mean of $-0.454$ under leave-rule-out: the
+same pattern, less severe, because the kernel provides smoother
+interpolation than a hard $k$-neighbour average.
+
+\subsection{Tree ensembles outside the production set}
+
+\begin{center}\small
+\begin{tabular}{lrrr}
+\toprule
+Model & \multicolumn{2}{c}{context-holdout $\rsq$} & leave-rule-out \\
+\cmidrule(lr){2-3}
+ & soft/general & mean, 6 spec. & mean $\rsq$ \\
+\midrule
+extra trees & 0.961 & 0.608 & 0.209 \\
+gradient boosting (sklearn) & 0.959 & 0.597 & 0.280 \\
+AdaBoost & 0.917 & 0.601 & $-1.248$ \\
+shallow random forest & 0.934 & 0.597 & $-0.230$ \\
+shallow decision tree & 0.926 & 0.553 & $-1.733$ \\
+small MLP & 0.972 & 0.595 & 0.219 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Extra trees and sklearn gradient boosting remain positive under the
+revised protocol --- they are structurally similar to the production
+ensembles --- but at roughly one third of their performance. The
+deliberately shallow variants collapse, confirming that depth is what
+carries cross-rule transfer.
+
+The small MLP is worth singling out: it \emph{matched} the production
+LightGBM on soft/general under the original protocol ($0.972$ vs $0.971$)
+and falls to a mean $\rsq$ of $0.219$ under leave-rule-out. It is the
+sharpest single example of two models that an inadequate evaluation
+declares equivalent and an adequate one separates by six-tenths of an
+$\rsq$ point.
+
+\subsection{The dummy baseline}
+
+\texttt{DummyRegressor(strategy="mean")} predicts the training mean for
+every row. It scores $-0.004$ under the original protocol --- correct,
+since predicting the training mean on a test set drawn from the same
+distribution yields approximately zero --- and $-15.637$ under
+leave-rule-out, because each held-out rule's mean differs substantially
+from the pooled training mean.
+
+That number is a useful calibration for the panel: it establishes the
+scale on which the leave-rule-out $\rsq$ values should be read. On that
+scale, LightGBM's $+0.627$ and ridge's $-0.874$ are both far above the
+no-information floor, and the separation between them is real.
+
+\tbl{tab_exp3_extra_regressors}{All alternative models under the original
+context-holdout protocol, averaged across the six specialists.}

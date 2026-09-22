@@ -1,0 +1,200 @@
+\chapter{The prediction problem and the system under investigation}
+\label{ch:context}
+
+\begin{saybox}[title=What to say at the start of this section]
+Open by stating the problem in one sentence --- predicting how many days a
+cheese formulation remains acceptable under given storage conditions ---
+then explain that the system is not one model but six, and that this
+structure matters for everything that follows, because it determines how
+little data each individual model actually sees.
+\end{saybox}
+
+\section{The prediction task}
+
+The system predicts \emph{shelf life in days} for a cheese formulation
+under specified storage conditions. The target variable,
+\texttt{shelf\_life\_days}, is continuous and strictly positive, so the
+problem is posed as regression. Given a feature vector $\mathbf{x}$
+describing the cheese matrix, the treatment applied to it, the storage
+environment, and the spoilage or safety indicator being tracked, the model
+estimates
+\begin{equation}
+\hat{y} = f(\mathbf{x}), \qquad
+\hat{y} \in \mathbb{R}_{>0} \text{ (days)} .
+\end{equation}
+
+Two distinct questions are asked of the same physical system, and the
+project treats them as two separate prediction tasks:
+
+\begin{description}[leftmargin=1.6em, style=nextline, font=\bfseries\color{dgreen}]
+\item[General shelf life] the time until a quality indicator crosses an
+  acceptability threshold --- yeasts and moulds, total viable count,
+  sensory acceptability, pH drift, peroxide value, oxidation index, visible
+  moulds, or clostridial late blowing. This is a \emph{quality} endpoint.
+\item[Safety endpoint] the time until a pathogen-related criterion is
+  reached --- \emph{Listeria monocytogenes}, \emph{Staphylococcus aureus},
+  \emph{Salmonella}. This is a \emph{safety} endpoint and, as
+  \Cref{sec:censoring} discusses, its target semantics are not identical
+  to those of the quality endpoint.
+\end{description}
+
+\section{Six specialists, not one model}
+
+The production architecture routes each prediction to one of six
+specialist models, indexed by the Cartesian product of cheese category and
+prediction task:
+\begin{equation}
+\mathcal{S} = \{\text{soft}, \text{semi-hard}, \text{hard}\}
+\times
+\{\text{general\_shelf\_life}, \text{safety\_endpoint}\},
+\qquad |\mathcal{S}| = 6 .
+\end{equation}
+
+This was verified against the implementation, not assumed: the training
+driver \evd{train\_specialists.py} iterates over exactly these three
+categories and two tasks, loading one category file per category and
+filtering it on the \texttt{model\_task} column. Each specialist is trained
+independently, with its own feature schema detection, its own preprocessing
+fit, and its own set of four candidate model families.
+
+\fig{fig04_dataset_composition}{0.92}{%
+  Composition of the V7 training corpus. The three category files contain
+  34\,000 rows in total, partitioned into six specialist training sets.
+  Every row carries \texttt{data\_origin = synthetic\_literature\_%
+  constrained\_v7}; there is no real-observation subset in this corpus.
+  Generated from the three raw specialist CSV files.}
+
+The practical consequence of this architecture is that the effective
+training set for any one model is much smaller than the headline corpus
+size. The hard/safety-endpoint specialist, for example, trains on
+$2\,240$ rows, not on $34\,000$. This becomes important in
+\Cref{ch:synthetic}, where the motivation for synthetic expansion is
+examined quantitatively.
+
+\section{The four candidate model families}
+
+For each of the six specialists, four model families are trained and
+compared:
+
+\begin{description}[leftmargin=1.6em, style=nextline, font=\bfseries\color{dgreen}]
+\item[Random Forest] a bagged ensemble of unpruned regression trees;
+  variance reduction through bootstrap resampling and feature subsampling.
+\item[LightGBM] gradient boosting with leaf-wise (best-first) tree growth
+  and histogram-binned split finding.
+\item[XGBoost] gradient boosting with depth-wise tree growth and explicit
+  $L_1$/$L_2$ leaf-weight regularization in the objective.
+\item[Explainable Boosting Machine (EBM)] a glass-box generalized additive
+  model with a bounded number of pairwise interaction terms, cyclically
+  boosted one feature at a time.
+\end{description}
+
+Their exact production hyperparameters are recovered from source and
+reported in \Cref{tab:hparams}; the mathematics of each is developed in
+\Cref{ch:rf,ch:lgbm-xgb,ch:ebm}.
+
+\begin{table}[htbp]\centering\small
+\caption{Production hyperparameters, read directly from
+  \texttt{train\_specialists.py}. The seed is global
+  (\texttt{SEED = 42}) and shared by the splitter and every model.}
+\label{tab:hparams}
+\begin{tabular}{lp{9.4cm}}
+\toprule
+Model & Configuration as implemented \\
+\midrule
+Random Forest &
+\texttt{n\_estimators=400}, \texttt{max\_depth=None},
+\texttt{min\_samples\_leaf=2}, \texttt{random\_state=42}, \texttt{n\_jobs=-1} \\
+\addlinespace[2pt]
+LightGBM &
+\texttt{n\_estimators=2000}, \texttt{learning\_rate=0.03},
+\texttt{num\_leaves=31}, \texttt{min\_child\_samples=20},
+\texttt{subsample=0.9}, \texttt{colsample\_bytree=0.9};
+early stopping after 50 rounds on the validation set \\
+\addlinespace[2pt]
+XGBoost &
+\texttt{n\_estimators=2000}, \texttt{learning\_rate=0.03},
+\texttt{max\_depth=6}, \texttt{subsample=0.9},
+\texttt{colsample\_bytree=0.9}, \texttt{eval\_metric="rmse"};
+early stopping after 50 rounds \\
+\addlinespace[2pt]
+EBM &
+\texttt{interactions=10}, \texttt{max\_bins=256},
+\texttt{learning\_rate=0.02}, \texttt{max\_rounds=3000},
+\texttt{min\_samples\_leaf=4}, \texttt{outer\_bags=8} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{findingbox}[title=Note on capacity]
+Two of the four production models use \emph{two thousand} boosting rounds
+with early stopping, and the Random Forest grows 400 fully-developed trees
+with a minimum leaf size of two. These are high-capacity configurations.
+If the high scores were produced by capacity, reducing capacity should
+reduce them. \Cref{ch:diagnostics} tests exactly that, and it does not.
+\end{findingbox}
+
+\section{Feature space}
+
+Schema detection is performed per specialist at training time by
+\texttt{detect\_schema()}: any column that is not the target and not on the
+exclusion list is classified as numeric, binary, or categorical by
+inspecting its dtype and its set of unique values. The V7 files carry 63
+columns, of which the identifier, provenance, and zero-variance columns are
+excluded, leaving the physically meaningful inputs.
+
+The features that reach the model describe four groups:
+
+\begin{itemize}[leftmargin=1.3em, itemsep=1pt]
+\item \textbf{Matrix composition:} \texttt{matrix\_ph},
+  \texttt{matrix\_water\_activity}, \texttt{matrix\_moisture\_pct},
+  \texttt{matrix\_fat\_pct}, \texttt{matrix\_protein\_pct},
+  \texttt{matrix\_salt\_pct}, \texttt{matrix\_ripening\_days},
+  \texttt{pasteurization\_applied}, \texttt{food\_matrix},
+  \texttt{physical\_form}. (\texttt{base\_cheese\_name} is \emph{excluded}
+  as redundant with \texttt{food\_matrix}; it is retained in the data and
+  used throughout this report to label results.)
+\item \textbf{Storage environment:} \texttt{storage\_temperature\_c},
+  \texttt{packaging\_type}, \texttt{headspace\_oxygen\_pct},
+  \texttt{headspace\_co2\_pct}, \texttt{headspace\_n2\_pct}.
+\item \textbf{Treatment:} \texttt{treatment\_type},
+  \texttt{application\_method}, \texttt{ingredient\_count},
+  \texttt{primary\_ingredient\_name}, \texttt{primary\_ingredient\_family},
+  \texttt{canonical\_concentration\_value}, \texttt{is\_control}. (The raw
+  \texttt{primary\_concentration} and its unit column are excluded in
+  favour of the unit-harmonised canonical value.)
+\item \textbf{Indicator definition:} \texttt{indicator\_group},
+  \texttt{indicator\_type}, \texttt{indicator\_threshold},
+  \texttt{initial\_indicator\_value}, and, for safety specialists only,
+  \texttt{initial\_inoculum\_log\_cfu\_g} and \texttt{growth\_support}.
+\end{itemize}
+
+\subsection{What is deliberately excluded, and why it matters}
+\label{sec:exclusions}
+
+The exclusion list is not a formality. Reading it is one of the more
+informative things one can do in this codebase, because the comments record
+checks that were actually performed. Eleven V7-specific columns are
+excluded, each for a stated and verifiable reason: \texttt{routing\_category}
+is $1$:$1$ with \texttt{cheese\_category};
+\texttt{physical\_form\_observed} is constant zero;
+\texttt{endpoint\_threshold\_basis} and \texttt{is\_challenge\_test} are
+bijective with \texttt{model\_task} and therefore constant within any one
+specialist; \texttt{evidence\_class}, \texttt{observed\_fields},
+\texttt{source\_url}, \texttt{source\_note},
+\texttt{generation\_rule\_version}, and \texttt{matrix\_profile\_confidence}
+are provenance rather than physics.
+
+Critically for this investigation, \texttt{source\_rule\_id} itself is
+excluded from the feature set. The models never see the rule label. The
+problem identified in \Cref{ch:discovery} is therefore \emph{not} that the
+rule identifier leaks into the features --- it does not --- but that the
+\emph{evaluation split} ignores it.
+
+\begin{limitbox}[title=One exclusion worth discussing with the panel]
+\texttt{target\_is\_lower\_bound} is excluded with the comment that it
+``describes the \textsc{target}'s censoring semantics, not a live input a
+user could supply.'' That reasoning is sound for a deployed predictor:
+the flag would not be known at prediction time. But it means the
+regression objective treats censored and uncensored targets identically
+during fitting. \Cref{sec:censoring} returns to this.
+\end{limitbox}

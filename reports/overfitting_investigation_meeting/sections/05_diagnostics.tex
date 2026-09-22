@@ -1,0 +1,234 @@
+\chapter{The diagnostic experiments}
+\label{ch:diagnostics}
+
+\begin{saybox}[title=What to say at the start of this section]
+Frame these as elimination, not as vindication. Each experiment tests one
+of the explanations that was proposed, and each returns a negative result.
+Negative results are what narrow a diagnosis, and the fact that four
+independent interventions all fail to move the score is itself the
+strongest evidence that the cause lies outside the model.
+\end{saybox}
+
+\section{Design of the diagnostic suite}
+
+All diagnostic experiments share a common harness
+(\evd{scripts/experiments/overfitting\_diagnosis.py}) so that comparisons
+are matched. The shared elements are: the V7 specialist files; the
+production exclusion list; a preprocessing pipeline of median imputation
+plus standardisation for numeric columns and most-frequent imputation plus
+one-hot encoding for categorical columns, \emph{always fitted on the
+training partition only}; the seed $42$; and the production context-holdout
+split, except where an experiment explicitly changes it.
+
+Six experiments were executed, producing $164$ individual model fits whose
+results are stored as CSV files in
+\evd{scripts/experiments/overfitting\_diagnosis/}.
+
+\section{Experiment 1 --- reducing model capacity}
+
+\subsection{What was changed}
+
+Four deliberately low-capacity learners replaced the production ensembles,
+holding the data and the split fixed:
+
+\begin{itemize}[leftmargin=1.3em, itemsep=1pt]
+\item \textbf{Ridge regression} --- linear in the one-hot expanded
+  features, $L_2$-penalised, no interactions and no nonlinearity.
+\item \textbf{Shallow decision tree} --- a single tree with restricted
+  depth and an enforced minimum leaf size.
+\item \textbf{Shallow random forest} --- a small, depth-limited forest.
+\item \textbf{Small MLP} --- a compact multilayer perceptron.
+\end{itemize}
+
+\subsection{A note on the proposal to use logistic regression and CNNs}
+
+Two suggestions in the original feedback require a technical
+clarification, which should be made politely but clearly in the meeting.
+
+\emph{Logistic regression} is a classifier: it models
+$P(y = k \mid \mathbf{x})$ over a discrete label set. It cannot be applied
+to a continuous day-valued target without first discretising that target,
+and discretising changes the prediction problem. The honest linear
+analogue for a continuous target is regularised linear regression, which is
+exactly what ridge, lasso, elastic net, Bayesian ridge and PLS provide, and
+all five were run. Logistic regression \emph{was} additionally run, on a
+tertile-binned version of the target, and is reported in \Cref{sec:logistic}
+as a reformulation rather than as a substitute.
+
+\emph{Convolutional networks} exploit translation-invariant local structure
+in grid-like inputs --- pixels, spectra, time series. The input here is a
+tabular row of heterogeneous scalars and categorical codes with no spatial
+or temporal adjacency, so convolution has no structure to exploit. The
+appropriate neural baseline for tabular data is a fully-connected network,
+and a small MLP was run in its place. No CNN was implemented, and the
+report says so rather than implying one was.
+
+\subsection{Results}
+
+\tbl{tab_exp1_reduced_complexity}{Experiment 1: reduced-capacity models on
+the production data and the production split.}
+
+\fig{fig08_complexity_classes}{0.86}{%
+  Mean context-holdout test $\rsq$ across the six specialists for every
+  model evaluated in the diagnostic suite, spanning a constant-output
+  baseline through to the production ensembles.}
+
+\begin{findingbox}[title=Result of Experiment 1]
+Capacity reduction does not reduce the score. On soft/general-shelf-life,
+ridge regression reaches $\rsq = 0.910$ and a \emph{small MLP} reaches
+$\rsq = 0.972$ --- statistically indistinguishable from the production
+LightGBM's $0.971$ on the same split. On hard/general, ridge reaches
+$0.929$ against the production XGBoost's $0.933$.
+
+A linear model with no interaction terms recovering a score within two
+points of a 2000-round gradient ensemble is a strong signal about the
+\emph{problem}, not about the models: the mapping from features to target
+in this corpus is close to linear-recoverable within the rules present.
+\end{findingbox}
+
+Note also that the reduced-capacity models reproduce the safety-endpoint
+failures faithfully --- ridge scores $-0.055$ on hard/safety where the
+production Random Forest scores $-0.097$. A shared failure across
+capacity classes again points at the data rather than at the learner.
+
+\section{Experiment 1b --- the logistic-regression reformulation}
+\label{sec:logistic}
+
+To address the logistic-regression suggestion on its own terms, the
+continuous target was binned into tertiles per specialist (short / medium /
+long shelf life) and a multinomial logistic regression fitted to the
+resulting three-class problem.
+
+\tbl{tab_exp3_logistic}{Experiment 1b: multinomial logistic regression on
+tertile-binned shelf life, with the empirical cut-points used.}
+
+\fig{fig12_logistic_regression}{0.9}{%
+  Logistic regression on the tertile-binned target. High accuracy on the
+  quality specialists mirrors the regression result: a linear decision rule
+  separates the classes well within the rules present.}
+
+The result mirrors Experiment 1: on soft/general the classifier reaches
+$95.2\%$ test accuracy with macro-$F_1 = 0.952$. This is consistent with
+the regression finding and inconsistent with the hypothesis that model
+complexity generates the apparent performance. It does not, however, test
+generalization any more than the regression did --- it is the same split,
+so it inherits the same limitation.
+
+\section{Experiment 2 --- changing $K$ in cross-validation}
+
+\subsection{What was changed}
+
+$K$-fold cross-validation replaced the single holdout, at $K = 5$ and
+$K = 10$, for ridge regression and LightGBM.
+
+\tbl{tab_exp2_kfold}{Experiment 2: cross-validated $\rsq$ at two values of
+$K$, with per-fold values.}
+
+\fig{fig10_kfold_cv}{0.95}{%
+  Cross-validated $\rsq$ at $K = 5$ and $K = 10$. The fold-to-fold standard
+  deviation is small in every configuration: the folds agree with each
+  other because they are structurally equivalent.}
+
+\begin{findingbox}[title=Result of Experiment 2]
+Changing $K$ changes essentially nothing: ridge regression on the
+aggregated corpus yields $\rsq = 0.9234 \pm 0.0055$ at $K=5$, with per-fold
+values $[0.9217, 0.9293, 0.9225, 0.9289, 0.9145]$.
+
+The reason is structural, and it is worth stating explicitly at the
+meeting: $K$ controls \emph{how many} partitions the data is cut into, not
+\emph{along which variable} it is cut. If every fold still contains rows
+from every generation rule, then every fold is the same experiment
+repeated. The low standard deviation across folds is not evidence of
+stability; it is evidence that the folds are interchangeable.
+\end{findingbox}
+
+\section{Experiment 3 --- aggregating all cheese categories}
+
+The three category-specific training sets were concatenated into a single
+corpus and one model per algorithm was trained on the union, testing
+whether the specialist architecture was responsible for the scores through
+narrow within-category homogeneity.
+
+\fig{fig11_granularity}{0.95}{%
+  Per-category specialists versus a single aggregated model, same models
+  and same protocol.}
+
+\begin{findingbox}[title=Result of Experiment 3]
+Aggregation does not remove the effect. Scores remain in the same region,
+which is what the generation-rule account predicts: pooling categories
+pools their rules too, so the test rows are still drawn from rules the
+training set contains.
+\end{findingbox}
+
+\section{Experiment 4 --- removing the validation set}
+
+The validation partition was merged into training, giving an $85/15$
+train/test split with the test partition left untouched, and every
+model--specialist pair was refitted.
+
+\tbl{tab_exp4_validation_removal}{Experiment 4: test $\rsq$ with and
+without a separate validation partition, matched pairs.}
+
+\fig{fig09_validation_removal}{0.56}{%
+  Each point is one model--specialist pair. Points lie on the diagonal:
+  the presence or absence of a validation split does not materially change
+  the test score.}
+
+\begin{findingbox}[title=Result of Experiment 4]
+The mean change in test $\rsq$ across all matched pairs is $+0.0003$.
+Neither the extra training rows nor the removal of the early-stopping
+signal has a material effect.
+
+This should be stated carefully: removing a validation set is \emph{not} a
+methodological improvement, and this experiment should not be read as
+endorsing it. Its value is purely diagnostic --- it eliminates
+validation-set design as a candidate explanation.
+\end{findingbox}
+
+\section{Experiment 5 --- the full model zoo}
+
+Ten further regressors were added to obtain a complete capacity spectrum:
+lasso, elastic net, Bayesian ridge, PLS regression, $k$-nearest neighbours
+($k=5$), RBF-kernel SVR, gradient boosting, AdaBoost, extra trees, and a
+mean-predicting dummy baseline. With the four from Experiment 1 and the
+three production ensembles this gives seventeen configurations.
+
+\tbl{tab_exp3_extra_regressors}{Experiment 5: the extended model zoo under
+the original context-holdout protocol, averaged over the six specialists.}
+
+The dummy baseline is the control that makes the rest interpretable: it
+scores $\rsq = -0.003$, confirming the metric behaves as expected and that
+the other models are doing real work relative to a constant prediction.
+
+\section{Summary of the diagnostic phase}
+
+\begin{table}[htbp]\centering\small
+\caption{Diagnostic summary. Four independent interventions on the model
+and the protocol; no material change in the score.}
+\label{tab:diag_summary}
+\begin{tabular}{p{3.3cm}p{4.1cm}p{5.6cm}}
+\toprule
+Experiment & What changed & Outcome \\
+\midrule
+1. Reduce capacity & 17 models from linear to 2000-round ensembles &
+Scores essentially unchanged; ridge within 2 points of production LightGBM
+on soft/general \\
+\addlinespace[2pt]
+1b. Reformulate as classification & tertile-binned target, multinomial
+logistic & $95.2\%$ accuracy on soft/general; same pattern \\
+\addlinespace[2pt]
+2. Change $K$ & $K = 5$ and $K = 10$ cross-validation &
+$\rsq = 0.923 \pm 0.006$; fold variance negligible \\
+\addlinespace[2pt]
+3. Aggregate categories & one model over all three categories &
+No material change \\
+\addlinespace[2pt]
+4. Remove validation set & $85/15$ instead of $70/15/15$ &
+Mean $\Delta \rsq = +0.0003$ \\
+\midrule
+\multicolumn{3}{p{13.4cm}}{\textbf{Conclusion of the phase:} every
+intervention on the model or on the partition \emph{sizes} failed. The
+remaining untested variable was the partition \emph{variable} itself.} \\
+\bottomrule
+\end{tabular}
+\end{table}
